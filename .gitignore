@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Never commit saves or anything derived from them
+*.sav
+*.bak*
+*.editor-tmp
+_editor_backups/
+_fix/
+
+# Local settings
+settings.json
