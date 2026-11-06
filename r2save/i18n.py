@@ -124,10 +124,10 @@ S = {
                 "Безопаснее всего камни мира и чекпоинты в уже открытых зонах.",
                 "How to use: close the game → pick a point → «Teleport here» → «Save» → load in.\n"
                 "World stones and checkpoints in discovered zones are the safest."),
-    "tp_warn": ("⚠ Неоткрытые камни мира дают чёрный экран (проверено). Переходы и неисследованные зоны — на свой "
+    "tp_warn": ("⚠ Неоткрытые камни мира (⚠ в таблице) могут дать чёрный экран. Переходы и неисследованные зоны — на свой "
                 "риск: можно появиться за туманной стеной или пропустить триггер квеста. Игра должна быть закрыта "
                 "полностью — выход в меню не подходит. Бэкап делается автоматически.",
-                "⚠ Undiscovered world stones give a black screen (tested). Transitions and unexplored zones are at "
+                "⚠ Undiscovered world stones (⚠ in the table) may give a black screen. Transitions and unexplored zones are at "
                 "your own risk: you may spawn behind a fog wall or skip a quest trigger. The game must be fully "
                 "closed — quitting to the main menu is not enough. A backup is made automatically."),
     "bm_info": ("Blood Moon:  шанс %s%% · последняя проверка %s · последний раз был %s",
@@ -147,14 +147,16 @@ S = {
                          "Всё равно телепортировать?",
                          "%s — %s.\nThis is not a discovered world stone/checkpoint; a black screen or a broken quest "
                          "is possible.\nTeleport anyway?"),
-    "tp_confirm_stone": ("%s — %s.\n\nЭтот камень мира ещё не открыт. Проверено в игре: появление у неоткрытого "
-                         "камня мира даёт чёрный экран при загрузке — придётся закрывать игру через диспетчер задач "
-                         "и восстанавливать бэкап.\n\nНадёжно работают открытые камни мира и чекпоинты, в том числе "
-                         "в неисследованных зонах.\n\nВсё равно телепортировать?",
-                         "%s — %s.\n\nThis world stone has not been discovered yet. Tested in game: spawning at an "
-                         "undiscovered world stone gives a black screen on load — you will have to kill the game and "
-                         "restore a backup.\n\nDiscovered world stones and checkpoints (also in unexplored zones) "
-                         "work reliably.\n\nTeleport anyway?"),
+    "tp_confirm_stone": ("%s — %s.\n\nЭтот камень мира ещё не открыт. В игре проверено два таких случая: "
+                         "Mournful Promenade (зона уже посещена) дал чёрный экран при загрузке, The Great Hall "
+                         "(зона ещё не посещена) сработал. Закономерность пока неясна.\n\nБэкап сделается "
+                         "автоматически; при чёрном экране закрой игру через диспетчер задач и восстанови его.\n\n"
+                         "Телепортировать?",
+                         "%s — %s.\n\nThis world stone has not been discovered yet. Two such cases were tested in "
+                         "game: Mournful Promenade (zone already visited) gave a black screen on load, The Great Hall "
+                         "(zone not visited yet) worked. The pattern is not clear yet.\n\nA backup is made "
+                         "automatically; on a black screen kill the game in Task Manager and restore it.\n\n"
+                         "Teleport?"),
     "tp_confirm_world": ("Сейчас активен другой мир. %s станет активным — игра загрузит его. Продолжить?",
                          "Another world is active. %s will become the active world — the game will load it. Continue?"),
     "tp_done": ("Телепорт: %s · %s", "Teleport: %s · %s"),

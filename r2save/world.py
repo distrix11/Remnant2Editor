@@ -53,8 +53,8 @@ class Link:
 
     @property
     def undiscovered_stone(self):
-        """A world stone the player has not activated yet. Spawning at one gives a black screen on load
-        (tested: Forlorn Coast / Mournful Promenade). Checkpoints of unexplored zones do work."""
+        """A world stone the player has not activated yet. Mixed results in game: Mournful Promenade (zone
+        already visited) gave a black screen on load, The Great Hall (zone not visited yet) worked."""
         return self.type == "Waypoint" and not self.discovered
 
     @property
