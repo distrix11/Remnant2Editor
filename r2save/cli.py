@@ -234,6 +234,31 @@ def cmd_teleport(args):
     print("saved %s (backup: %s)" % (path, bak))
 
 
+def cmd_open_stone(args):
+    path = _world_path(args)
+    ws = WorldSave.load(path)
+    worlds = ws.worlds()
+    w = ws.active_world() if args.world_slot is None else next((x for x in worlds if x.slot == args.world_slot), None)
+    if w is None:
+        sys.exit("world not found")
+    if args.all:
+        changed = w.discover_all_stones()
+    else:
+        if args.zone is None or args.point is None:
+            sys.exit("give <zone> <point> or --all (see: python -m r2save worlds --unvisited)")
+        z, l = w.find(args.zone, args.point)
+        if l is None:
+            sys.exit("point %s not found in zone %s" % (args.point, args.zone))
+        changed = [l] if l.discover() else []
+    if not changed:
+        print("nothing to open")
+        return
+    for l in changed:
+        print("opened: %s" % w.describe(l.zone.id, l.name_id))
+    bak = safe_write(ws.sf, path, make_backup=True, check_game=not args.force)
+    print("saved %s (backup: %s)" % (path, bak))
+
+
 def cmd_bloodmoon(args):
     path = _world_path(args)
     ws = WorldSave.load(path)
@@ -304,6 +329,12 @@ def main(argv=None):
     s.add_argument("point")
     s.add_argument("--world-slot", type=int, help="world slot (default: active world)")
     s.set_defaults(fn=cmd_teleport)
+    s = sub.add_parser("open-stone", help="open (activate) world stones so they show up in the travel menu")
+    s.add_argument("zone", type=int, nargs="?")
+    s.add_argument("point", nargs="?")
+    s.add_argument("--all", action="store_true", help="every world stone of the world")
+    s.add_argument("--world-slot", type=int, help="world slot (default: active world)")
+    s.set_defaults(fn=cmd_open_stone)
     s = sub.add_parser("bloodmoon", help="show Blood Moon state; --now makes the game roll 100%% on the next zone load")
     s.add_argument("--now", dest="force_event", action="store_true")
     s.add_argument("--world-slot", type=int)

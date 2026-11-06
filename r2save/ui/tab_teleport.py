@@ -37,6 +37,8 @@ class TeleportTab:
         b = ttk.Frame(f)
         b.pack(anchor="w", pady=(6, 0))
         ttk.Button(b, text=t("tp_btn"), style="Accent.TButton", command=self.teleport).pack(side="left")
+        ttk.Button(b, text=t("stone_open_btn"), command=self.open_stone).pack(side="left", padx=(18, 0))
+        ttk.Button(b, text=t("stone_open_all_btn"), command=self.open_all_stones).pack(side="left", padx=(6, 0))
         ttk.Label(f, style="Muted.TLabel", text=t("tp_note")).pack(anchor="w", pady=(8, 0))
         ttk.Label(f, style="Warn.TLabel", text=t("tp_warn"), wraplength=1050).pack(anchor="w", pady=(4, 0))
         self.tp_t.tv.bind("<Double-1>", lambda e: self.teleport())
@@ -188,3 +190,27 @@ class TeleportTab:
         if bmo is None:
             return
         self._edit(self.wd, "%s: %s" % (self._world_name(w), t("bm_reset_done")), bmo.reset)
+
+    def open_stone(self):
+        sel = self.tp_t.selected()
+        if sel is None:
+            return messagebox.showinfo(TITLE, t("tp_pick"))
+        link = self._tp_rows[int(sel)]
+        if link.type != "Waypoint":
+            return messagebox.showinfo(TITLE, t("stone_not_stone"))
+        if link.discovered:
+            return messagebox.showinfo(TITLE, t("stone_already", self._zl(link.stone_name or link.zone.label)))
+        name = self._zl(link.stone_name or link.zone.label)
+        self._edit(self.wd, t("stone_opened", name), link.discover)
+
+    def open_all_stones(self):
+        w = self._current_tp_world()
+        if w is None:
+            return
+        todo = [l for l in w.stones() if not l.discovered]
+        if not todo:
+            return messagebox.showinfo(TITLE, t("stone_all_open", self._world_name(w)))
+        names = ", ".join(self._zl(l.stone_name or l.zone.label) for l in todo)
+        if not messagebox.askyesno(TITLE, t("stone_open_all_confirm", len(todo), self._world_name(w), names)):
+            return
+        self._edit(self.wd, t("stone_opened_all", len(todo), self._world_name(w)), w.discover_all_stones)

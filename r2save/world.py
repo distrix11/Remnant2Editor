@@ -51,6 +51,19 @@ class Link:
         """Travel-menu name of a world stone, None for other link types."""
         return self.label if self.type == "Waypoint" else None
 
+    def discover(self):
+        """Activate a world stone so it shows up in the in-game travel menu (IsActive = 1, the flag the
+        game sets when you touch the stone). Returns False if it already was active."""
+        if self.type != "Waypoint":
+            raise ValueError("only world stones can be opened")
+        p = self.bag.get("IsActive")
+        if p is None:
+            raise ValueError("this world stone has no IsActive flag")
+        if p.value:
+            return False
+        p.value = 1
+        return True
+
     @property
     def undiscovered_stone(self):
         """A world stone the player has not activated yet. Mixed results in game: Mournful Promenade (zone
@@ -293,6 +306,14 @@ class World:
         if stone and stone != z.label:
             return "%s · %s (%s)" % (z.label, stone, link_name)
         return "%s · %s" % (z.label, link_name)
+
+    def stones(self):
+        """All world stones of this world (enabled ones)."""
+        return [l for z in self.zones() for l in z.links() if l.type == "Waypoint" and not l.disabled]
+
+    def discover_all_stones(self):
+        """Open every world stone of this world. Returns the links that were changed."""
+        return [l for l in self.stones() if l.discover()]
 
     def teleport(self, link, set_checkpoint=True, make_active=True):
         if not link.can_respawn:

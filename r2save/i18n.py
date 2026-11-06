@@ -119,6 +119,18 @@ S = {
     "type_Waypoint": ("Камень мира", "World stone"),
     "type_Checkpoint": ("Чекпоинт", "Checkpoint"),
     "type_Link": ("Переход", "Transition"),
+    "stone_open_btn": ("Открыть камень", "Open stone"),
+    "stone_open_all_btn": ("Открыть все камни мира", "Open all stones"),
+    "stone_not_stone": ("Открыть можно только камень мира (тип «Камень мира»).",
+                        "Only world stones (type “World stone”) can be opened."),
+    "stone_already": ("«%s» уже открыт.", "“%s” is already open."),
+    "stone_opened": ("Открыт камень мира: %s", "World stone opened: %s"),
+    "stone_all_open": ("В мире «%s» все камни уже открыты.", "All world stones of “%s” are already open."),
+    "stone_open_all_confirm": ("Открыть %d камней мира в «%s»?\n\n%s\n\nОни появятся в меню путешествия "
+                               "камня мира. В игре не проверено — бэкап сделается при сохранении.",
+                               "Open %d world stones in “%s”?\n\n%s\n\nThey will appear in the world stone "
+                               "travel menu. Not tested in game yet — a backup is made on save."),
+    "stone_opened_all": ("Открыто камней мира: %d (%s)", "World stones opened: %d (%s)"),
     "tp_btn": ("Телепорт сюда", "Teleport here"),
     "tp_note": ("Как пользоваться: закрой игру → выбери точку → «Телепорт сюда» → «Сохранить» → загрузись.\n"
                 "Безопаснее всего камни мира и чекпоинты в уже открытых зонах.",

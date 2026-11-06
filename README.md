@@ -26,6 +26,7 @@ Pure Python · no dependencies · dark Remnant-style GUI + CLI · English / Ру
 | **Traits** | Trait levels with a live budget: points spent vs. available, a warning before you overspend and again on save |
 | **Add item** | Catalog of ~700 rings, amulets, armor, relics, engrams, mutators, consumables and materials by name, with "where to get it in game" |
 | **Teleport** | Pick where the game spawns you on the next load: world stones and checkpoints of the campaign or adventure, with the game's own world stone names (*World stone · Mournful Promenade*) and readable checkpoints (*Checkpoint · end*) |
+| **Open world stones** | Activate a world stone (or all stones of a world) so it appears in the in-game travel menu without walking there |
 | **Blood Moon** | Make the game roll a Blood Moon on the next zone load, then reset the chance afterwards |
 | **World analysis** | Bosses, dungeons, events and item pickups of the current roll, their loot and what you already own; jump straight to the zone |
 | **All fields** | Raw editor for any number / bool / string in `profile.sav` and `save_N.sav` |
@@ -159,6 +160,7 @@ python -m venv .venv
 | Teleport to world stones and checkpoints you have discovered | ✅ |
 | Teleport to a checkpoint of an unexplored zone | ✅ |
 | Teleport to an **undiscovered world stone** | ⚠️ mixed: Mournful Promenade (zone already visited) → black screen; The Great Hall (zone not visited) → worked. The editor warns before it |
+| Opening world stones (travel menu) | ⚠️ not checked in game yet |
 | Teleporting while the game sits in the main menu | ❌ doesn't work — close the game completely |
 | Summon Blood Moon | ✅ |
 | Adding catalog items (rings, amulets, armor…) | ⚠️ same format as tested resources, not checked in game |
@@ -194,6 +196,7 @@ python -m r2save archetype medic max                  :: or a number
 python -m r2save add-item /Game/.../Ring_X.Ring_X_C --equipment
 python -m r2save worlds                               :: worlds and spawn points of the active world
 python -m r2save teleport 229 536_Checkpoint          :: spawn there on the next load
+python -m r2save open-stone --all                     :: open every world stone of the active world
 python -m r2save bloodmoon --now                      :: roll Blood Moon on the next zone load
 python -m r2save backups                              :: editor + game backups
 python -m r2save restore "<save folder>\_editor_backups\profile.20261105-163107.sav"
@@ -255,6 +258,11 @@ pip install pillow && python tools\make_icons.py                                
 ```
 
 ## Changelog
+
+**1.2.0**
+- Open world stones: one or all stones of a world become available in the in-game travel menu
+  (Teleport tab buttons, `python -m r2save open-stone`). Only the stone's `IsActive` flag changes — the same flag the
+  game sets when you touch it.
 
 **1.1.3**
 - Undiscovered world stone warning corrected: one tested case gave a black screen, another worked. The CLI warns
