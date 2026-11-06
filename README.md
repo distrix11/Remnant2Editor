@@ -162,7 +162,7 @@ python -m venv .venv
 | Teleport to a checkpoint of an unexplored zone | ✅ |
 | Teleport to an **undiscovered world stone** | ⚠️ mixed: Mournful Promenade (zone already visited) → black screen; The Great Hall (zone not visited) → worked. The editor warns before it |
 | Opening world stones (travel menu) | ✅ all stones of an Awakened King roll appeared and worked; travelling straight to the One True King and killing him completed the story quest |
-| Duplicating Crimson King Coins | ⚠️ not checked in game yet |
+| Duplicating Crimson King Coins | ✅ 1 coin → 3, the Red Prince accepted the tribute and *Succession* unlocked |
 | Teleporting while the game sits in the main menu | ❌ doesn't work — close the game completely |
 | Summon Blood Moon | ✅ |
 | Adding catalog items (rings, amulets, armor…) | ⚠️ same format as tested resources, not checked in game |
