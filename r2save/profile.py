@@ -146,6 +146,18 @@ class Item:
         return t in ("RangedWeaponInstanceData", "EquipmentModInstanceData") or (
             t == "EquipmentInstanceData" and self.category in ("Weapons", "Melee", "Relics", "RelicFragments"))
 
+    @property
+    def max_level(self):
+        """10 for special (boss) weapons and mutators, 20 for standard weapons, None if unknown."""
+        from .itemdb import max_level_for
+        return max_level_for(self.path)
+
+    @property
+    def is_special_weapon(self):
+        from .itemdb import MAX_LEVEL_SPECIAL, db
+        e = db().by_path.get(self.path.lower())
+        return bool(e) and e.get("Type") == "weapon" and self.max_level == MAX_LEVEL_SPECIAL
+
     def set_quantity(self, qty):
         qty = int(qty)
         if not (0 < qty <= 2147483647):
@@ -163,10 +175,14 @@ class Item:
                 o.extra = b"\0\0\0\0"
         o.props.props.append(self.char.make_int("Quantity", qty))
 
-    def set_level(self, level):
+    def set_level(self, level, allow_over_max=False):
         level = int(level)
         if not (0 <= level <= 255):
             raise ValueError("level must be 0..255")
+        mx = self.max_level
+        if mx is not None and level > mx and not allow_over_max:
+            raise ValueError("%s can be upgraded to +%d at most%s" % (
+                self.name, mx, " (special / boss weapon)" if self.is_special_weapon else ""))
         o = self.instance
         p = self._iprop("Level")
         if p is not None:

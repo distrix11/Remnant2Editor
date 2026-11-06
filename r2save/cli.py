@@ -113,8 +113,11 @@ def cmd_set_level(args):
     ch = _char(prof, args)
     it = _match([i for i in ch.items() if i.levelable], args.item)
     old = it.level
-    it.set_level(args.level)
-    print("%s: +%s -> +%d" % (it.name, old, args.level))
+    try:
+        it.set_level(args.level)
+    except ValueError as e:
+        sys.exit(str(e))
+    print("%s: +%s -> +%d%s" % (it.name, old, args.level, "  (max +%d)" % it.max_level if it.max_level else ""))
     _save(prof, path, args)
 
 

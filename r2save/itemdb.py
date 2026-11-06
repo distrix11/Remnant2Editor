@@ -57,6 +57,35 @@ ADD_RULES = {
     "mutator": ("EquipmentModInstanceData", False),
 }
 
+# Special / boss weapons: crafted from a boss material, upgraded with Lumenite + Simulacrum, max +10.
+# The game keeps most of them under .../Special/...; the rest are recognised by their boss material,
+# the Corrupted_ prefix or this list (checked against the Fextralife weapon list, Nov 2026).
+SPECIAL_WEAPON_IDS = {"Weapon_AssassinsDagger", "Weapon_RitualistScythe", "Weapon_CrystalStaff", "Weapon_Polygun",
+                      "Weapon_Genesis", "Weapon_Redeemer", "Weapon_HarvesterScythe"}
+MAX_LEVEL_STANDARD = 20
+MAX_LEVEL_SPECIAL = 10
+MAX_LEVEL_MUTATOR = 10
+
+
+def is_special_weapon(entry):
+    p = (entry.get("ProfileId") or "").lower()
+    return ("/special/" in p or bool(entry.get("Material")) or entry["Id"].startswith("Weapon_Corrupted")
+            or entry["Id"] in SPECIAL_WEAPON_IDS)
+
+
+def max_level_for(path):
+    """Highest upgrade level the game allows for an item path: 10 for special (boss) weapons and mutators,
+    20 for standard weapons, None when unknown."""
+    e = db().by_path.get((path or "").lower())
+    if e is None:
+        return None
+    if e.get("Type") == "weapon":
+        return MAX_LEVEL_SPECIAL if is_special_weapon(e) else MAX_LEVEL_STANDARD
+    if e.get("Type") == "mutator":
+        return MAX_LEVEL_MUTATOR
+    return None
+
+
 LOOT_TYPES = {"ring", "amulet", "armor", "relic", "engram", "consumable", "concoction", "material",
               "mutator", "weapon", "mod", "fragment", "armorspecial", "specialmod", "prism", "dream"}
 

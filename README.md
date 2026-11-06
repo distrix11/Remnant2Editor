@@ -22,7 +22,7 @@ Pure Python · no dependencies · dark Remnant-style GUI + CLI · English / Ру
 |---|---|
 | **Character** | Archetype XP with a "max level" button, overview of power level, trait rank and trait points |
 | **Resources** | Scrap, Lumenite, Relic Dust, irons, Blood Moon Essence, DLC alloys… Creates missing resources |
-| **Inventory** | Searchable list with categories; stack quantity and upgrade level of weapons, mutators and relic fragments; **delete** rings, amulets, armor, mutators, consumables and materials (refuses anything equipped, attached to a weapon or bound to the radial menu) |
+| **Inventory** | Searchable list with categories; stack quantity and upgrade level of weapons, mutators and relic fragments — capped at the game's maximum (**+10 for special / boss weapons**, +20 for standard weapons, 10 for mutators), shown as `+7 / 10`; **delete** rings, amulets, armor, mutators, consumables and materials (refuses anything equipped, attached to a weapon or bound to the radial menu) |
 | **Quest items** | List the quest items each world keeps in `save_N.sav` (keys, coins…); duplicate Crimson King Coins |
 | **Traits** | Trait levels with a live budget: points spent vs. available, a warning before you overspend and again on save |
 | **Add item** | Catalog of ~700 rings, amulets, armor, relics, engrams, mutators, consumables and materials by name, with "where to get it in game" |
@@ -172,7 +172,9 @@ python -m venv .venv
 ### Known risks
 
 - **Weapons can't be added** (they need ammo and mod data); the catalog does not offer them.
-- **Upgrade level above the maximum** (+20 regular, +10 boss weapons): game behaviour unknown.
+- **Upgrade level above the maximum** is refused (+20 standard, +10 special / boss weapons and mutators). Special
+  weapons are recognised by the game's `Special` folder, their boss material or a short list checked against the
+  Fextralife weapon list; the raw *All fields* editor is not limited.
 - **Traits:** exceeding available points may make the game reset the allocation (the editor warns you).
 - **Deleting items** removes the inventory entry; its small data object stays in the file unreferenced (removing it
   would renumber every reference in the save) until the game rewrites the save. Undo works until you save; after
@@ -262,6 +264,10 @@ pip install pillow && python tools\make_icons.py                                
 ```
 
 ## Changelog
+
+**1.4.0**
+- Upgrade levels are capped per item: special / boss weapons +10, standard weapons +20, mutators 10. The inventory
+  shows `+7 / 10`, the level prompt says which kind it is, `set-level` refuses higher values.
 
 **1.3.0**
 - Quest items: Inventory → **Quest items…** lists what each world keeps in its own inventory (keys, coins…) and can

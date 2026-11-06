@@ -20,7 +20,7 @@ class InventoryTab:
         self.inv_count.pack(side="left", padx=12)
         self.inv_t = Table(f, [("name", t("col_item")), ("cat", t("col_cat")), ("type", t("col_type")),
                                ("qty", t("col_qty_s")), ("lvl", t("col_level")), ("id", "ID")],
-                           [300, 130, 200, -80, -70, -60])
+                           [300, 130, 200, -80, -90, -60])
         self.inv_t.pack(fill="both", expand=True)
         b = ttk.Frame(f)
         b.pack(anchor="w", pady=(6, 0))
@@ -54,9 +54,10 @@ class InventoryTab:
                 continue
             qty = it.quantity
             lvl = it.level
+            mx = it.max_level if it.levelable else None
             self._inv_items[str(it.id)] = it
             self.inv_t.add(it.id, (it.name, it.category, it.instance_type or "",
-                                   "" if qty is None else qty, "" if lvl is None else "+%d" % lvl, it.id))
+                                   "" if qty is None else qty, "" if lvl is None else ("+%d / %d" % (lvl, mx) if mx else "+%d" % lvl), it.id))
             n += 1
         self.inv_count.config(text=t("count", n))
 
@@ -101,8 +102,15 @@ class InventoryTab:
         if not it.levelable:
             return messagebox.showinfo(TITLE, t("not_levelable", it.name, it.instance_type))
         old = it.level or 0
-        v = _ask_int(self, it.name, t("level_prompt"), old, 0, 20)
-        if v is None:
+        mx = it.max_level
+        if mx is None:
+            prompt, hi = t("level_prompt"), 20
+        elif it.is_special_weapon:
+            prompt, hi = t("level_prompt_special", mx), mx
+        else:
+            prompt, hi = t("level_prompt_max", mx), mx
+        v = _ask_int(self, it.name, prompt, min(old, hi), 0, hi)
+        if v is None or v == old:
             return
         self._edit(self.pd, "%s: +%d → +%d" % (it.name, old, v), lambda: it.set_level(v))
 
