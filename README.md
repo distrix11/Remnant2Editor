@@ -22,13 +22,14 @@ Pure Python · no dependencies · dark Remnant-style GUI + CLI · English / Ру
 |---|---|
 | **Character** | Archetype XP with a "max level" button, overview of power level, trait rank and trait points |
 | **Resources** | Scrap, Lumenite, Relic Dust, irons, Blood Moon Essence, DLC alloys… Creates missing resources |
-| **Inventory** | Searchable list with categories; stack quantity and upgrade level of weapons, mutators and relic fragments |
+| **Inventory** | Searchable list with categories; stack quantity and upgrade level of weapons, mutators and relic fragments; **delete** rings, amulets, armor, mutators, consumables and materials (refuses anything equipped, attached to a weapon or bound to the radial menu) |
+| **Traits** | Trait levels with a live budget: points spent vs. available, a warning before you overspend and again on save |
 | **Add item** | Catalog of ~700 rings, amulets, armor, relics, engrams, mutators, consumables and materials by name, with "where to get it in game" |
 | **Teleport** | Pick where the game spawns you on the next load: world stones and checkpoints of the campaign or adventure, with readable names (*World stone · Corrupted Ravager*, *Checkpoint · end*) |
 | **Blood Moon** | Make the game roll a Blood Moon on the next zone load, then reset the chance afterwards |
 | **World analysis** | Bosses, dungeons, events and item pickups of the current roll, their loot and what you already own; jump straight to the zone |
 | **All fields** | Raw editor for any number / bool / string in `profile.sav` and `save_N.sav` |
-| **Safety** | Automatic backups, a backup browser with restore, undo (Ctrl+Z), change list, protection against overwriting progress the game saved in the meantime |
+| **Safety** | Automatic backups (the newest 20 per file are kept — configurable), a backup browser with restore, undo (Ctrl+Z), change list, protection against overwriting progress the game saved in the meantime |
 
 <table>
 <tr>
@@ -113,7 +114,8 @@ python -m venv .venv
 - The .exe bundles everything: item database, names, icons, the Montserrat font, Tcl/Tk.
 - Settings (`settings.json`) and the error log (`editor.log`) of the .exe live in `%APPDATA%\Remnant2SaveEditor`.
   If something goes wrong, look at `editor.log` first.
-- **Rebuild after updating the source** — the .exe does not update itself.
+- **Rebuild after updating the source** — the .exe does not update itself. The version is shown in the **?** (About)
+  window and in the exe's *Properties → Details*; both come from `__version__` in `r2save/__init__.py`.
 - Windows SmartScreen / Defender may warn about a freshly built, unsigned PyInstaller exe. That is a common false
   positive; building it yourself from this source is the safe way.
 - `build\`, `dist\` and `.venv\` are ignored by git. The command line (`python -m r2save ...`) still needs Python.
@@ -135,6 +137,8 @@ python -m venv .venv
 ## Safety
 
 - **Backups.** Every save first copies the original to `<save folder>\_editor_backups\<file>.<date-time>.sav`.
+  Only the newest editor backups of each file are kept (20 by default; 10 / 50 / 100 / all in **Backups…**);
+  the game's own `.bak` files are never touched.
   **Backups…** lists editor backups and the game's own `.bak1–3` with a summary; **Restore** puts one back
   (the current file is backed up first).
 - **Verified writes.** Before writing, the result must decompress to exactly the serialized bytes and re-parse
@@ -156,12 +160,16 @@ python -m venv .venv
 | Summon Blood Moon | ✅ |
 | Adding catalog items (rings, amulets, armor…) | ⚠️ same format as tested resources, not checked in game |
 | Trait levels | ⚠️ not checked |
+| Deleting items | ⚠️ not checked in game |
 
 ### Known risks
 
 - **Weapons can't be added** (they need ammo and mod data); the catalog does not offer them.
 - **Upgrade level above the maximum** (+20 regular, +10 boss weapons): game behaviour unknown.
-- **Traits:** exceeding available points may make the game reset the allocation.
+- **Traits:** exceeding available points may make the game reset the allocation (the editor warns you).
+- **Deleting items** removes the inventory entry; its small data object stays in the file unreferenced (removing it
+  would renumber every reference in the save) until the game rewrites the save. Undo works until you save; after
+  that, re-add the item from the catalog or restore a backup.
 - **Teleport** to transitions or unexplored zones can put you behind a fog wall or skip a quest trigger.
   World stones and checkpoints of discovered zones are the safe choice.
 - **After a forced Blood Moon** the game keeps the chance at 100 %; press *Reset chance (5%)* (the editor warns you).
@@ -188,6 +196,7 @@ python -m r2save dump "<save folder>\save_0.sav" Quest  :: every field of any .s
 python -m r2save verify "<save folder>\profile.sav"   :: byte-exact round-trip check
 ```
 
+`python -m r2save --version` prints the version.
 Options: `--file <profile.sav>`, `--world <save_N.sav>`, `--slot N` (character), `--force` (skip the game check).
 
 ## How it works
@@ -218,8 +227,12 @@ r2save/analyzer.py       what is in a rolled world and what is already owned
 r2save/itemdb.py         item / event database and localized names
 r2save/doc.py            open file + undo history + on-disk change detection
 r2save/storage.py        save discovery, backups, restore, verified atomic writes
-r2save/gui.py            tkinter GUI          r2save/theme.py   theme, fonts, icons, dialogs
-r2save/i18n.py           RU / EN strings      r2save/cli.py     command line
+r2save/ui/app.py         GUI window: files, undo, save, refresh
+r2save/ui/tab_*.py       one module per tab (character, resources, inventory, traits, add, teleport, …)
+r2save/ui/dialogs.py     changes, backups, about        r2save/ui/common.py   shared widgets
+r2save/theme.py          theme, fonts, icons, dialogs   r2save/gui.py         compatibility entry point
+r2save/i18n.py           RU / EN strings      r2save/settings.py  settings.json (language, backups to keep)
+r2save/cli.py            command line         r2save/__init__.py  version
 r2save/data/             db.json, names.json (+ their licenses)
 r2save/assets/           own icons and emblem, Montserrat font
 tests/                   roundtrip.py, edit_test.py, dump.py
@@ -235,6 +248,17 @@ python tests\roundtrip.py "<save folder>\profile.sav" "<save folder>\save_0.sav"
 python tests\edit_test.py "<save folder>\profile.sav" "%TEMP%\r2test"               :: edits a copy
 pip install pillow && python tools\make_icons.py                                    :: rebuild icons
 ```
+
+## Changelog
+
+**1.1.0**
+- Delete items from the inventory (safe kinds only, with checks for equipped / attached / radial-bound items).
+- Trait point budget on the Traits tab, warnings before overspending and on save.
+- Backup rotation: keep the newest N editor backups per file (default 20).
+- About window (**?**), version number, version info in the .exe properties, `--version` in the CLI.
+- GUI split into one module per tab (`r2save/ui/`).
+
+**1.0.0** — first public version.
 
 ## Credits
 

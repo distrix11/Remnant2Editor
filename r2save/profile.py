@@ -1,6 +1,7 @@
 """High level editing API for profile.sav (characters, inventory, archetypes)."""
 import re
 
+from .nav import walk, _walk_bag
 from .core import (SaveFile, SaveData, UObject, PropertyBag, Property, FName, ObjectRef,
                    ByteProp, SaveFormatError)
 
@@ -402,6 +403,65 @@ class Character:
         items.items.append(entry)
         return Item(self, entry)
 
+    # Item kinds the editor lets you delete: plain equipment and stackables. Weapons, mods, relics,
+    # fragments, archetype items, currencies and quest items carry links the game expects, so they stay.
+    DELETABLE_TYPES = ("ring", "amulet", "armor", "mutator", "consumable", "concoction", "material")
+
+    def delete_blockers(self, item):
+        """Reasons the item must not be deleted, as (code, detail) pairs; empty list = safe to delete.
+        Codes: type, equipped, attached, mods, radial."""
+        from .itemdb import db
+        out = []
+        e = db().by_path.get(item.path.lower())
+        kind = e.get("Type") if e else None
+        if kind not in self.DELETABLE_TYPES or "/archetypes/" in item.path.lower():
+            out.append(("type", kind or "?"))
+        slot = item.entry.get("EquipmentSlotIndex")
+        if slot is not None and slot.value != -1:
+            out.append(("equipped", slot.value))
+        att = item._iprop("EquippedModItemID")
+        if att is not None and att.value != -1:
+            host = next((it for it in self.items() if it.id == att.value), None)
+            out.append(("attached", host.name if host else "#%d" % att.value))
+        for other in self.items():
+            o = other.instance
+            if other.entry is item.entry or o is None or o.props is None or o.props.get("Mods") is None:
+                continue
+            if any(p.name.name == "ModItemID" and p.value == item.id for _, p, _b, _s in walk(o, sd=self.sd)):
+                out.append(("attached", other.name))
+        if item._iprop("Mods") is not None and any(
+                p.name.name == "ModItemID" and p.value != -1 for _, p, _b, _s in walk(item.instance, sd=self.sd)):
+            out.append(("mods", ""))
+        rs = self.components.get("RadialShortcuts")
+        if rs is not None and rs.props is not None:
+            for _, p, _b, _s in _walk_bag(rs.props, "", self.sd):
+                if p.name.name == "ItemBP" and getattr(p.value, "path", None) == item.path:
+                    out.append(("radial", ""))
+                    break
+        # de-duplicate (a mod can be reported from both sides of the link)
+        seen, res = set(), []
+        for r in out:
+            if r not in seen:
+                seen.add(r)
+                res.append(r)
+        return res
+
+    def remove_item(self, item, force=False):
+        """Remove one inventory entry. Raises ValueError when delete_blockers() objects (unless force).
+        The entry's InstanceData object stays in the object table unreferenced: removing it would
+        renumber every object reference in the save, and the game drops unreferenced objects on its
+        next save anyway."""
+        if not force:
+            why = self.delete_blockers(item)
+            if why:
+                raise ValueError("cannot delete %s: %s" % (item.name, ", ".join(c for c, _ in why)))
+        items = self._inv["Items"].value.items
+        for i, e in enumerate(items):
+            if e is item.entry:
+                del items[i]
+                return
+        raise ValueError("item is not in this inventory")
+
     def set_currency(self, path, qty):
         it = self.find_item(path)
         if it is None:
@@ -421,6 +481,15 @@ class Character:
 
     def traits(self):
         return [Trait(self, e) for e in self._trait_entries()]
+
+    SPENDABLE_KINDS = ("core", "trait")
+
+    def trait_budget(self):
+        """(spent, available) trait points. Spent = levels of core + regular traits (archetype traits and
+        perks are free); available = TraitPoints (falls back to TraitRank)."""
+        spent = sum(t.level for t in self.traits() if t.kind in self.SPENDABLE_KINDS)
+        avail = self.trait_points if self.trait_points is not None else self.trait_rank
+        return spent, avail
 
     def __repr__(self):
         return "Character(%d %s/%s PL%s)" % (self.slot, self.archetype, self.secondary, self.power_level)

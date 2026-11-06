@@ -143,6 +143,7 @@ def apply(root):
     s.configure("Title.TLabel", foreground=TEXT, font=FONT_H)
     s.configure("Brand.TLabel", foreground=RED_GLOW, font=FONT_H)
     s.configure("Info.TLabel", background=PANEL, foreground=TEXT, font=FONT_INFO, padding=(14, 10))
+    s.configure("InfoWarn.TLabel", background=PANEL, foreground=RED_GLOW, font=FONT_INFO, padding=(14, 10))
     s.configure("Status.TLabel", background=PANEL, foreground=MUTED, font=FONT_SUB, padding=(10, 4))
     s.configure("Dirty.TLabel", background=PANEL, foreground=RED_GLOW, font=FONT_SUB, padding=(10, 4))
 

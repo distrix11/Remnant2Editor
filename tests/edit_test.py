@@ -49,6 +49,21 @@ arch = [a for a in ch.archetypes() if a.xp == 0][0]
 arch.set_xp(1000)
 print("xp on", arch.name)
 
+deletable = [i for i in ch.items() if not ch.delete_blockers(i) and i.category == "Rings"]
+victim = deletable[0] if deletable else None
+if victim is not None:
+    victim_path = victim.path
+    ch.remove_item(victim)
+    print("deleted", victim.name)
+equipped = next(i for i in ch.items() if i.entry["EquipmentSlotIndex"].value != -1)
+try:
+    ch.remove_item(equipped)
+    raise AssertionError("equipped item must not be deletable")
+except ValueError:
+    print("equipped item refused:", equipped.name)
+spent, avail = ch.trait_budget()
+print("trait budget", spent, "/", avail)
+
 bak = safe_write(prof.sf, path, check_game=False)
 print("backup", bak)
 
@@ -61,6 +76,8 @@ if added:
 assert ch2.find_item(no_qty.path).quantity == 3
 assert ch2.find_item(weapon.path).level == 2
 assert [a for a in ch2.archetypes() if a.path == arch.path][0].xp == 1000
+if victim is not None:
+    assert ch2.find_item(victim_path) is None
 
 after = snapshot(prof2.sf)
 bset, aset = set(before), set(after)

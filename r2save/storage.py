@@ -46,7 +46,43 @@ def backup(path, backup_dir=None):
         dst = os.path.join(d, "%s.%s-%d.sav" % (base, stamp, i))
         i += 1
     shutil.copy2(path, dst)
+    prune_backups(d, base)
     return dst
+
+
+def _stamp_key(name):
+    """Sort key for 'base.YYYYMMDD-HHMMSS[-n].sav' (creation order, unlike mtime which copy2 preserves)."""
+    parts = name.split(".")
+    stamp = parts[1] if len(parts) >= 3 else ""
+    try:
+        return (stamp[:15], int(stamp[16:]) if len(stamp) > 16 else 0)
+    except ValueError:
+        return (stamp, 0)
+
+
+def prune_backups(backup_dir, base, keep=None):
+    """Keep only the newest `keep` editor backups of one save (base = 'profile' / 'save_0').
+    keep=None reads the setting; 0 keeps everything. Returns the removed paths."""
+    if keep is None:
+        from . import settings
+        try:
+            keep = int(settings.get("backups_keep"))
+        except (TypeError, ValueError):
+            keep = 20
+    if keep <= 0 or not os.path.isdir(backup_dir):
+        return []
+    mine = [n for n in os.listdir(backup_dir)
+            if n.endswith(".sav") and n.split(".", 1)[0] == base and n.count(".") >= 2]
+    mine.sort(key=_stamp_key, reverse=True)
+    removed = []
+    for n in mine[keep:]:
+        p = os.path.join(backup_dir, n)
+        try:
+            os.remove(p)
+            removed.append(p)
+        except OSError:
+            pass
+    return removed
 
 
 def safe_write(sf, path, make_backup=True, check_game=True):

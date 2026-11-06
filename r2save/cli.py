@@ -248,6 +248,8 @@ def cmd_bloodmoon(args):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="r2save", description="Remnant 2 save editor (CLI)")
+    from . import __version__
+    ap.add_argument("--version", action="version", version="%(prog)s " + __version__)
     ap.add_argument("--file", help="path to profile.sav (default: auto-detect)")
     ap.add_argument("--slot", type=int, help="character slot (default: active character)")
     ap.add_argument("--force", action="store_true", help="do not check whether the game is running")

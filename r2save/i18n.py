@@ -1,27 +1,8 @@
 """UI strings (Russian / English) and the persisted language setting."""
-import json
-import os
 
 LANGS = ("ru", "en")
 _lang = "en"
 
-
-
-def _settings_path():
-    """Next to the editor when run from source; %APPDATA%\\Remnant2SaveEditor when packaged as .exe
-    (a PyInstaller one-file build unpacks itself into a temporary folder that is deleted on exit)."""
-    import sys
-    if getattr(sys, "frozen", False):
-        base = os.path.join(os.environ.get("APPDATA") or os.path.dirname(sys.executable), "Remnant2SaveEditor")
-        try:
-            os.makedirs(base, exist_ok=True)
-        except OSError:
-            base = os.path.dirname(sys.executable)
-        return os.path.join(base, "settings.json")
-    return os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "settings.json")
-
-
-_SETTINGS = _settings_path()
 
 S = {
     # toolbar
@@ -81,6 +62,19 @@ S = {
                     "сбросить распределение. Архетипные трейты (perk) управляются игрой — их лучше не трогать.",
                     "Careful: the total must not exceed your available trait points, or the game may reset the "
                     "allocation. Archetype perks are managed by the game — better leave them alone."),
+    "tr_budget": ("Очки трейтов: потрачено %d из %d · свободно %d. Архетипные трейты и перки бесплатные (серые).",
+                  "Trait points: %d of %d spent · %d free. Archetype traits and perks are free (grey)."),
+    "tr_budget_over": ("⚠ Очки трейтов: потрачено %d из %d — перерасход %d. Игра может сбросить распределение.",
+                       "⚠ Trait points: %d of %d spent — %d over. The game may reset the allocation."),
+    "tr_budget_unknown": ("Очки трейтов: потрачено %d (сколько доступно — в сейве не найдено)",
+                          "Trait points: %d spent (available amount not found in the save)"),
+    "tr_over_confirm": ("%s: после изменения будет потрачено %d очков при доступных %d.\n"
+                        "Игра может сбросить распределение трейтов. Всё равно изменить?",
+                        "%s: after this change %d points would be spent out of %d available.\n"
+                        "The game may reset the trait allocation. Change anyway?"),
+    "tr_over_save": ("Потрачено %d очков трейтов при доступных %d. Игра может сбросить распределение.\n"
+                     "Всё равно сохранить?", "%d trait points are spent out of %d available. The game may reset "
+                     "the allocation.\nSave anyway?"),
     "kind_core": ("базовый", "core"),
     "kind_trait": ("обычный", "regular"),
     "kind_archetype": ("архетип", "archetype"),
@@ -198,10 +192,14 @@ S = {
     "bk_details_profile": ("Персонажей: %d · активный: %s", "Characters: %d · active: %s"),
     "bk_details_world": ("Активный мир: %s · загрузка: %s · наиграно %.1f ч",
                          "Active world: %s · loads into: %s · played %.1f h"),
+    "bk_keep": ("Хранить бэкапов на файл:", "Backups to keep per file:"),
+    "bk_keep_all": ("все", "all"),
+    "bk_pruned": ("Удалено старых бэкапов: %d", "Old backups removed: %d"),
     "bk_none": ("Бэкапов пока нет", "No backups yet"),
-    "bk_note": ("Бэкапы редактора делаются перед каждым сохранением и восстановлением. "
-                "Файлы .bak1–3 — собственные бэкапы игры.",
-                "Editor backups are made before every save and restore. .bak1–3 are the game's own backups."),
+    "bk_note": ("Бэкапы редактора делаются перед каждым сохранением и восстановлением; самые старые удаляются "
+                "сверх заданного количества. Файлы .bak1–3 — собственные бэкапы игры, их редактор не трогает.",
+                "Editor backups are made before every save and restore; the oldest beyond the chosen number are "
+                "removed. .bak1–3 are the game's own backups, the editor never touches them."),
     # blood moon reset
     "bm_reset_btn": ("Сбросить шанс (5%)", "Reset chance (5%)"),
     "bm_stuck": ("⚠ Событие уже было, а шанс остался 100% — нажми «Сбросить шанс», иначе Blood Moon будет "
@@ -258,6 +256,38 @@ S = {
     "itype_armorspecial": ("Броня", "Armor"), "itype_specialmod": ("Мод", "Mod"), "itype_prism": ("Призма", "Prism"),
     "itype_dream": ("Сон", "Dream"),
     "raw_source": ("Файл:", "File:"),
+    # inventory: delete
+    "del_btn": ("Удалить…", "Delete…"),
+    "del_confirm": ("Удалить «%s» из инвентаря?\n\nОтменить можно через «Отменить» до сохранения, а кольца, амулеты, "
+                    "броню, мутаторы, расходники и материалы — вернуть через вкладку «Добавить».",
+                    "Remove “%s” from the inventory?\n\nUntil you save, Undo brings it back; rings, amulets, armor, "
+                    "mutators, consumables and materials can also be re-added from the Add tab."),
+    "del_change": ("Удалён: %s", "Deleted: %s"),
+    "del_blocked": ("«%s» нельзя удалить:", "“%s” can't be deleted:"),
+    "del_why_type": ("этот вид предметов (%s) редактор не удаляет — оружие, моды, реликвии, фрагменты, предметы "
+                     "архетипов, валюты и квестовые предметы связаны с другими данными",
+                     "the editor doesn't delete this kind of item (%s) — weapons, mods, relics, fragments, archetype "
+                     "items, currencies and quest items are linked to other data"),
+    "del_why_equipped": ("он надет (слот %s) — сначала снимите его в игре",
+                         "it is equipped (slot %s) — unequip it in the game first"),
+    "del_why_attached": ("он вставлен в «%s» — сначала выньте его в игре",
+                         "it is attached to “%s” — detach it in the game first"),
+    "del_why_mods": ("в нём стоят моды/мутаторы", "it has mods or mutators attached"),
+    "del_why_radial": ("он назначен в радиальном меню расходников — уберите его оттуда в игре",
+                       "it is bound in the consumables radial menu — unbind it in the game first"),
+    # about
+    "about_title": ("О программе", "About"),
+    "about_version": ("Версия %s", "Version %s"),
+    "about_tagline": ("Неофициальный редактор сохранений Remnant 2", "Unofficial save editor for Remnant 2"),
+    "about_author": ("АВТОР И ЛИЦЕНЗИЯ", "AUTHOR & LICENSE"),
+    "about_credits": ("ИСПОЛЬЗУЕТ", "BUILT ON"),
+    "about_files": ("ФАЙЛЫ", "FILES"),
+    "about_settings": ("Настройки: %s", "Settings: %s"),
+    "about_log": ("Лог ошибок: %s", "Error log: %s"),
+    "about_disclaimer": ("Remnant и Remnant II — товарные знаки их владельцев. Проект не связан с Gunfire Games и "
+                         "Gearbox Publishing и не содержит файлов игры.",
+                         "Remnant and Remnant II are trademarks of their respective owners. This project is not "
+                         "affiliated with Gunfire Games or Gearbox Publishing and contains no game assets."),
     # dialogs / messages
     "open_title": ("Открыть сохранение", "Open save"),
     "all_files": ("Все файлы", "All files"),
@@ -320,22 +350,11 @@ def set_lang(lang, persist=True):
         return
     _lang = lang
     if persist:
-        try:
-            data = {}
-            if os.path.exists(_SETTINGS):
-                with open(_SETTINGS, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-            data["language"] = lang
-            with open(_SETTINGS, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2)
-        except Exception:
-            pass
+        from . import settings
+        settings.set("language", lang)
 
 
 def load_lang():
-    try:
-        with open(_SETTINGS, "r", encoding="utf-8") as f:
-            set_lang(json.load(f).get("language", "en"), persist=False)
-    except Exception:
-        pass
+    from . import settings
+    set_lang(settings.get("language") or "en", persist=False)
     return _lang
