@@ -40,6 +40,18 @@ class Link:
         return self._v("NameID").name
 
     @property
+    def label(self):
+        """In-game name stored with the link: world stones carry their own ('Mournful Promenade'),
+        checkpoints and transitions just repeat the zone name."""
+        v = _text(self._v("Label"))
+        return v.strip() if isinstance(v, str) and v.strip() else None
+
+    @property
+    def stone_name(self):
+        """Travel-menu name of a world stone, None for other link types."""
+        return self.label if self.type == "Waypoint" else None
+
+    @property
     def type(self):
         v = self._v("Type")
         return v.value.name.split("::")[-1] if v is not None else "?"
@@ -271,6 +283,9 @@ class World:
         z, l = self.find(zone_id, link_name)
         if z is None:
             return "zone %s / %s" % (zone_id, link_name)
+        stone = l.stone_name if l is not None else None
+        if stone and stone != z.label:
+            return "%s · %s (%s)" % (z.label, stone, link_name)
         return "%s · %s" % (z.label, link_name)
 
     def teleport(self, link, set_checkpoint=True, make_active=True):

@@ -208,8 +208,9 @@ def cmd_worlds(args):
                     continue
                 if not l.discovered and not args.unvisited:
                     continue
-                print("     %4d  %-26s %-11s %-32s %s" % (z.id, z.label[:26], l.type, l.name_id,
-                                                         "" if l.discovered else "(not discovered)"))
+                print("     %4d  %-26s %-11s %-32s %-26s %s" % (z.id, z.label[:26], l.type, l.name_id,
+                                                              (l.stone_name or "")[:26],
+                                                              "" if l.discovered else "(not discovered)"))
 
 
 def cmd_teleport(args):

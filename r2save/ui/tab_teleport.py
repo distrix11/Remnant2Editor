@@ -69,10 +69,14 @@ class TeleportTab:
         return "%s · %s" % (self._zl(z.label), self._point_label(l, self._quest_names(w)))
 
     def _point_label(self, link, qnames):
-        words = [t("hint_" + w) if ("hint_" + w) in i18n.S else w for w in point_hint(link.name_id)]
-        qid = quest_id_of(link.name_id)
-        qn = qnames.get(qid)
         parts = [t("type_" + link.type)]
+        stone = link.stone_name
+        if stone:
+            # world stones: the save stores the travel-menu name ('Mournful Promenade')
+            parts.append(self._zl(stone))
+            return " · ".join(parts)
+        words = [t("hint_" + w) if ("hint_" + w) in i18n.S else w for w in point_hint(link.name_id)]
+        qn = qnames.get(quest_id_of(link.name_id))
         if qn and qn not in (link.zone.label, self._zl(link.zone.label)):
             parts.append(qn)
         if words:
@@ -158,12 +162,13 @@ class TeleportTab:
             return messagebox.showinfo(TITLE, t("tp_pick"))
         link = self._tp_rows[int(sel)]
         w = link.zone.world
+        point = self._point_label(link, self._quest_names(w))
         if not (link.safe and link.discovered and link.zone.visited):
-            if not messagebox.askyesno(TITLE, t("tp_confirm_risky", self._zl(link.zone.label), link.name_id)):
+            if not messagebox.askyesno(TITLE, t("tp_confirm_risky", self._zl(link.zone.label), point)):
                 return
         if not w.active and not messagebox.askyesno(TITLE, t("tp_confirm_world", self._world_name(w))):
             return
-        self._edit(self.wd, t("tp_done", self._zl(link.zone.label), link.name_id), lambda: w.teleport(link))
+        self._edit(self.wd, t("tp_done", self._zl(link.zone.label), point), lambda: w.teleport(link))
 
     def blood_moon(self):
         w = self._current_tp_world()

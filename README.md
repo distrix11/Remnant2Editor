@@ -25,7 +25,7 @@ Pure Python · no dependencies · dark Remnant-style GUI + CLI · English / Ру
 | **Inventory** | Searchable list with categories; stack quantity and upgrade level of weapons, mutators and relic fragments; **delete** rings, amulets, armor, mutators, consumables and materials (refuses anything equipped, attached to a weapon or bound to the radial menu) |
 | **Traits** | Trait levels with a live budget: points spent vs. available, a warning before you overspend and again on save |
 | **Add item** | Catalog of ~700 rings, amulets, armor, relics, engrams, mutators, consumables and materials by name, with "where to get it in game" |
-| **Teleport** | Pick where the game spawns you on the next load: world stones and checkpoints of the campaign or adventure, with readable names (*World stone · Corrupted Ravager*, *Checkpoint · end*) |
+| **Teleport** | Pick where the game spawns you on the next load: world stones and checkpoints of the campaign or adventure, with the game's own world stone names (*World stone · Mournful Promenade*) and readable checkpoints (*Checkpoint · end*) |
 | **Blood Moon** | Make the game roll a Blood Moon on the next zone load, then reset the chance afterwards |
 | **World analysis** | Bosses, dungeons, events and item pickups of the current roll, their loot and what you already own; jump straight to the zone |
 | **All fields** | Raw editor for any number / bool / string in `profile.sav` and `save_N.sav` |
@@ -250,6 +250,10 @@ pip install pillow && python tools\make_icons.py                                
 ```
 
 ## Changelog
+
+**1.1.1**
+- Teleport shows world stones by their in-game travel-menu names (read from the save, every world and DLC), also in
+  `python -m r2save worlds`.
 
 **1.1.0**
 - Delete items from the inventory (safe kinds only, with checks for equipped / attached / radial-bound items).
