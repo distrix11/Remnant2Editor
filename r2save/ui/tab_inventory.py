@@ -27,6 +27,7 @@ class InventoryTab:
         ttk.Button(b, text=t("qty_btn"), command=self.inv_qty).pack(side="left")
         ttk.Button(b, text=t("level_btn"), command=self.inv_level).pack(side="left", padx=6)
         ttk.Button(b, text=t("del_btn"), command=self.inv_delete).pack(side="left", padx=(18, 0))
+        ttk.Button(b, text=t("qi_btn"), command=self.show_quest_items).pack(side="left", padx=(18, 0))
         self.inv_path = ttk.Label(f, text="", style="Muted.TLabel")
         self.inv_path.pack(anchor="w", pady=(6, 0))
         self.inv_t.tv.bind("<<TreeviewSelect>>", self._inv_sel)

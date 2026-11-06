@@ -259,6 +259,35 @@ def cmd_open_stone(args):
     print("saved %s (backup: %s)" % (path, bak))
 
 
+def cmd_quest_items(args):
+    path = _world_path(args)
+    ws = WorldSave.load(path)
+    for w in ws.worlds():
+        items = w.quest_items()
+        print("%s slot %d  %s%s" % ("*" if w.active else " ", w.slot, w.name, "" if items else "  (none)"))
+        for q in items:
+            print("     %4d  %s" % (q.id, q.name))
+
+
+def cmd_dup_quest_item(args):
+    path = _world_path(args)
+    ws = WorldSave.load(path)
+    worlds = ws.worlds()
+    w = ws.active_world() if args.world_slot is None else next((x for x in worlds if x.slot == args.world_slot), None)
+    if w is None:
+        sys.exit("world not found")
+    q = next((x for x in w.quest_items() if x.id == args.id), None)
+    if q is None:
+        sys.exit("quest item %d not found (see: python -m r2save quest-items)" % args.id)
+    try:
+        new = w.duplicate_quest_item(q, args.copies)
+    except ValueError as e:
+        sys.exit(str(e))
+    print("%s: +%d (now %d)" % (q.name, len(new), sum(1 for x in w.quest_items() if x.path == q.path)))
+    bak = safe_write(ws.sf, path, make_backup=True, check_game=not args.force)
+    print("saved %s (backup: %s)" % (path, bak))
+
+
 def cmd_bloodmoon(args):
     path = _world_path(args)
     ws = WorldSave.load(path)
@@ -335,6 +364,13 @@ def main(argv=None):
     s.add_argument("--all", action="store_true", help="every world stone of the world")
     s.add_argument("--world-slot", type=int, help="world slot (default: active world)")
     s.set_defaults(fn=cmd_open_stone)
+    s = sub.add_parser("quest-items", help="quest items stored in the world save (keys, coins...)")
+    s.set_defaults(fn=cmd_quest_items)
+    s = sub.add_parser("dup-quest-item", help="duplicate a Crimson King Coin in the world's quest inventory")
+    s.add_argument("id", type=int)
+    s.add_argument("--copies", type=int, default=1)
+    s.add_argument("--world-slot", type=int, help="world slot (default: active world)")
+    s.set_defaults(fn=cmd_dup_quest_item)
     s = sub.add_parser("bloodmoon", help="show Blood Moon state; --now makes the game roll 100%% on the next zone load")
     s.add_argument("--now", dest="force_event", action="store_true")
     s.add_argument("--world-slot", type=int)

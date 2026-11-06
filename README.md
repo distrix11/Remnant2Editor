@@ -23,6 +23,7 @@ Pure Python · no dependencies · dark Remnant-style GUI + CLI · English / Ру
 | **Character** | Archetype XP with a "max level" button, overview of power level, trait rank and trait points |
 | **Resources** | Scrap, Lumenite, Relic Dust, irons, Blood Moon Essence, DLC alloys… Creates missing resources |
 | **Inventory** | Searchable list with categories; stack quantity and upgrade level of weapons, mutators and relic fragments; **delete** rings, amulets, armor, mutators, consumables and materials (refuses anything equipped, attached to a weapon or bound to the radial menu) |
+| **Quest items** | List the quest items each world keeps in `save_N.sav` (keys, coins…); duplicate Crimson King Coins |
 | **Traits** | Trait levels with a live budget: points spent vs. available, a warning before you overspend and again on save |
 | **Add item** | Catalog of ~700 rings, amulets, armor, relics, engrams, mutators, consumables and materials by name, with "where to get it in game" |
 | **Teleport** | Pick where the game spawns you on the next load: world stones and checkpoints of the campaign or adventure, with the game's own world stone names (*World stone · Mournful Promenade*) and readable checkpoints (*Checkpoint · end*) |
@@ -161,6 +162,7 @@ python -m venv .venv
 | Teleport to a checkpoint of an unexplored zone | ✅ |
 | Teleport to an **undiscovered world stone** | ⚠️ mixed: Mournful Promenade (zone already visited) → black screen; The Great Hall (zone not visited) → worked. The editor warns before it |
 | Opening world stones (travel menu) | ✅ all stones of an Awakened King roll appeared and worked; travelling straight to the One True King and killing him completed the story quest |
+| Duplicating Crimson King Coins | ⚠️ not checked in game yet |
 | Teleporting while the game sits in the main menu | ❌ doesn't work — close the game completely |
 | Summon Blood Moon | ✅ |
 | Adding catalog items (rings, amulets, armor…) | ⚠️ same format as tested resources, not checked in game |
@@ -197,6 +199,8 @@ python -m r2save add-item /Game/.../Ring_X.Ring_X_C --equipment
 python -m r2save worlds                               :: worlds and spawn points of the active world
 python -m r2save teleport 229 536_Checkpoint          :: spawn there on the next load
 python -m r2save open-stone --all                     :: open every world stone of the active world
+python -m r2save quest-items                          :: quest items of every world
+python -m r2save dup-quest-item 1 --copies 2          :: 1 Crimson King Coin -> 3
 python -m r2save bloodmoon --now                      :: roll Blood Moon on the next zone load
 python -m r2save backups                              :: editor + game backups
 python -m r2save restore "<save folder>\_editor_backups\profile.20261105-163107.sav"
@@ -258,6 +262,10 @@ pip install pillow && python tools\make_icons.py                                
 ```
 
 ## Changelog
+
+**1.3.0**
+- Quest items: Inventory → **Quest items…** lists what each world keeps in its own inventory (keys, coins…) and can
+  duplicate Crimson King Coins (`python -m r2save quest-items` / `dup-quest-item`). Other quest items are read-only.
 
 **1.2.1**
 - Opening world stones confirmed in game; the confirmation no longer says "not tested".

@@ -5,7 +5,8 @@ RespawnZoneID / RespawnLinkNameID (+ LastCheckpoint*, where you return after dea
 """
 import datetime
 
-from .core import SaveFile, FName, SaveFormatError, TextProp, StructProp
+from .core import (SaveFile, FName, SaveFormatError, TextProp, StructProp, UObject, PropertyBag, Property,
+                   ObjectRef)
 
 _TICKS_PER_SEC = 10_000_000
 _EPOCH = datetime.datetime(1, 1, 1)
@@ -200,6 +201,37 @@ class BloodMoon:
             v.value = max(0, v.value - int(hours_back * 3600) * _TICKS_PER_SEC)
 
 
+class QuestItem:
+    """An entry of a world's own inventory (RemnantPlayerInventory of the root quest): quest items such as
+    keys, Crimson King Coins, Feast Master's Leftovers. They live in save_N.sav, not in the character."""
+
+    def __init__(self, world, entry):
+        self.world = world
+        self.entry = entry
+
+    @property
+    def id(self):
+        return self.entry["ID"].value
+
+    @property
+    def path(self):
+        return self.entry["ItemBP"].value.path
+
+    @property
+    def name(self):
+        from .itemdb import db
+        from .profile import pretty_name
+        return db().name_for_path(self.path) or pretty_name(self.path)
+
+    def __repr__(self):
+        return "QuestItem(%d %s)" % (self.id, self.name)
+
+
+# Quest items the editor may duplicate: stack-like counters whose copies are interchangeable.
+# Keys and story items are left alone (duplicates could confuse quest scripts).
+DUPLICABLE_QUEST_ITEMS = ("Quest_Item_CrimsonKingCoin",)
+
+
 class World:
     """A root quest: the campaign or one adventure."""
 
@@ -306,6 +338,68 @@ class World:
         if stone and stone != z.label:
             return "%s · %s (%s)" % (z.label, stone, link_name)
         return "%s · %s" % (z.label, link_name)
+
+    # -- quest inventory --
+    def _quest_inventory(self):
+        """(SaveData, PropertyBag) of this world's RemnantPlayerInventory, or (None, None)."""
+        comp = next((c for c in self.obj.components or () if c.key == "RemnantPlayerInventory"), None)
+        if comp is None or comp.props is None:
+            return None, None
+        from .nav import walk
+        sd = next((s for _, _p, bag, s in walk(self.save.sf) if bag is comp.props), None)
+        return sd, comp.props
+
+    def quest_items(self):
+        sd, inv = self._quest_inventory()
+        if inv is None or inv.get("Items") is None:
+            return []
+        return [QuestItem(self, e) for e in inv["Items"].value.items]
+
+    def duplicate_quest_item(self, item, copies=1):
+        """Add `copies` more entries of the same quest item, each with its own ItemInstanceData object,
+        exactly like the one the game wrote. Only DUPLICABLE_QUEST_ITEMS. Returns the new QuestItems."""
+        if not any(k in item.path for k in DUPLICABLE_QUEST_ITEMS):
+            raise ValueError("only %s can be duplicated" % ", ".join(DUPLICABLE_QUEST_ITEMS))
+        sd, inv = self._quest_inventory()
+        src_inst = item.entry["InstanceData"].value.obj
+        if sd is None or src_inst is None:
+            raise ValueError("quest inventory not found")
+        items = inv["Items"].value
+        idgen = inv.get("IDGen")
+        out = []
+        for _ in range(int(copies)):
+            nums = [o.name.number for o in sd.objects
+                    if not o.was_loaded and o.name is not None and o.name.number is not None]
+            inst = UObject()
+            inst.was_loaded = 0
+            inst.path = src_inst.path
+            inst.name = sd.fname(src_inst.name.name, (min(nums) - 1) if nums else None)
+            inst.outer_id = src_inst.outer_id
+            inst.props = PropertyBag(terminator=sd.fname("None"))
+            inst.extra = src_inst.extra
+            inst.is_actor = src_inst.is_actor
+            inst_index = sd.add_object(inst)
+            new_id = max([e["ID"].value for e in items.items] + [idgen.value if idgen is not None else 0]) + 1
+            if idgen is not None:
+                idgen.value = new_id
+            props = []
+            for p in item.entry.props:
+                n = p.name.name
+                if n == "ID":
+                    v = new_id
+                elif n == "InstanceData":
+                    v = ObjectRef(inst_index, sd.objects)
+                elif n == "New":
+                    v = 0
+                elif n == "ItemBP":
+                    v = ObjectRef(p.value.index, sd.objects)
+                else:
+                    v = p.value
+                props.append(Property(p.name, p.type, v, size=p.size, index=p.index, pg=p.pg))
+            entry = PropertyBag(props, terminator=item.entry.terminator)
+            items.items.append(entry)
+            out.append(QuestItem(self, entry))
+        return out
 
     def stones(self):
         """All world stones of this world (enabled ones)."""

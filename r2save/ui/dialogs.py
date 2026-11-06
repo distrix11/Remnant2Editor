@@ -190,3 +190,55 @@ class DialogsMixin:
         bar.pack(fill="x", side="bottom", pady=(10, 0))
         ttk.Button(bar, text="GitHub", command=lambda: webbrowser.open(REPO_URL)).pack(side="left")
         ttk.Button(bar, text=t("close"), style="Accent.TButton", command=win.destroy).pack(side="right")
+
+    def show_quest_items(self):
+        """Quest items of the selected world (they live in save_N.sav, not in the character inventory)."""
+        from ..world import DUPLICABLE_QUEST_ITEMS
+        if self.ws is None:
+            return messagebox.showinfo(TITLE, t("qi_no_world"))
+        win = DarkWindow(self, t("qi_title"), "760x440")
+        ttk.Label(win.body, text=t("qi_note"), style="Muted.TLabel", wraplength=720,
+                  justify="left").pack(anchor="w", pady=(0, 8))
+        tbl = Table(win.body, [("world", t("world")), ("item", t("col_item")), ("id", "ID")], [220, 400, -60],
+                    height=12)
+        tbl.pack(fill="both", expand=True)
+        rows = {}
+
+        def fill():
+            tbl.clear()
+            rows.clear()
+            n = 0
+            for w in self.ws.worlds():
+                for q in w.quest_items():
+                    key = "%d:%d" % (w.slot, q.id)
+                    rows[key] = (w.slot, q.id)
+                    dup = any(k in q.path for k in DUPLICABLE_QUEST_ITEMS)
+                    tbl.add(key, (self._world_name(w) + (t("active_mark") if w.active else ""), q.name, q.id),
+                            tags=() if dup else ("muted",))
+                    n += 1
+            if not n:
+                tbl.add("none", ("", t("qi_empty"), ""), tags=("muted",))
+
+        def duplicate():
+            sel = tbl.selected()
+            if sel not in rows:
+                return messagebox.showinfo(TITLE, t("qi_pick"), parent=win)
+            slot, qid = rows[sel]
+            w = next(x for x in self.ws.worlds() if x.slot == slot)
+            q = next(x for x in w.quest_items() if x.id == qid)
+            if not any(k in q.path for k in DUPLICABLE_QUEST_ITEMS):
+                return messagebox.showinfo(TITLE, t("qi_not_dup", q.name), parent=win)
+            n = _ask_int(win, q.name, t("qi_copies"), 2, 1, 20)
+            if n is None:
+                return
+            name = q.name
+            self._edit(self.wd, t("qi_done", name, n),
+                       lambda: next(x for x in self.ws.worlds() if x.slot == slot).duplicate_quest_item(
+                           next(x for x in next(y for y in self.ws.worlds() if y.slot == slot).quest_items()
+                                if x.id == qid), n))
+            fill()
+        fill()
+        b = ttk.Frame(win.body)
+        b.pack(fill="x", pady=(10, 0))
+        ttk.Button(b, text=t("qi_dup_btn"), command=duplicate).pack(side="left")
+        ttk.Button(b, text=t("close"), style="Accent.TButton", command=win.destroy).pack(side="right")

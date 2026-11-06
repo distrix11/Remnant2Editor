@@ -299,6 +299,23 @@ S = {
     "del_why_mods": ("в нём стоят моды/мутаторы", "it has mods or mutators attached"),
     "del_why_radial": ("он назначен в радиальном меню расходников — уберите его оттуда в игре",
                        "it is bound in the consumables radial menu — unbind it in the game first"),
+    # quest items (world inventory)
+    "qi_btn": ("Квестовые предметы…", "Quest items…"),
+    "qi_title": ("Квестовые предметы", "Quest items"),
+    "qi_note": ("Ключи, монеты и прочие квестовые предметы игра хранит не у персонажа, а в сейве мира (save_N.sav) — "
+                "у каждого приключения свои. Дублировать можно только Crimson King Coin, остальные показаны для "
+                "справки. Игра должна быть закрыта.",
+                "Keys, coins and other quest items are stored in the world save (save_N.sav), per adventure — not "
+                "in the character. Only Crimson King Coins can be duplicated; the rest is shown for reference. "
+                "The game must be closed."),
+    "qi_no_world": ("Сейв мира не загружен.", "No world save is loaded."),
+    "qi_empty": ("Квестовых предметов нет", "No quest items"),
+    "qi_pick": ("Выбери предмет в таблице", "Select an item in the table"),
+    "qi_not_dup": ("«%s» дублировать нельзя: копии квестовых ключей и сюжетных предметов могут сломать квест.",
+                   "“%s” can't be duplicated: copies of quest keys and story items could break the quest."),
+    "qi_copies": ("Сколько копий добавить?", "How many copies to add?"),
+    "qi_dup_btn": ("Дублировать…", "Duplicate…"),
+    "qi_done": ("%s: +%d", "%s: +%d"),
     # about
     "about_title": ("О программе", "About"),
     "about_version": ("Версия %s", "Version %s"),
