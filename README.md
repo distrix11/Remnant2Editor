@@ -49,17 +49,88 @@ Pure Python · no dependencies · dark Remnant-style GUI + CLI · English / Ру
 
 ## Getting started
 
-**Requirements:** Windows, [Python 3.8+](https://www.python.org/downloads/) (keep the default *tcl/tk* option;
-ticking *Add python.exe to PATH* is recommended). Steam version of the game.
+### 1. Install Python (once)
 
-1. Download the editor: **Code → Download ZIP** and unpack it, or
-   `git clone https://github.com/distrix11/Remnant2Editor.git`.
-2. Run **`Start Editor.bat`** (or double-click `Remnant2SaveEditor.pyw`).
-   The editor finds `%USERPROFILE%\Saved Games\Remnant2\Steam\<id>\profile.sav` automatically; the world save
-   `save_N.sav` of the selected character is opened alongside.
-3. **Close Remnant 2**, make your changes, press **Save** (Ctrl+S), then start the game.
+Download **Python 3.8 or newer** from [python.org](https://www.python.org/downloads/windows/) and run the installer:
+
+- tick **Add python.exe to PATH**;
+- keep **tcl/tk and IDLE** enabled (default) — the GUI needs it.
+
+Check in a terminal (`Win + R` → `cmd`): `python --version` (or `py --version`) should print 3.8+.
+
+### 2. Get the editor
+
+- **Code → Download ZIP** on this page and unpack it anywhere, **or**
+- `git clone https://github.com/distrix11/Remnant2Editor.git`
+
+### 3. Run it
+
+| Way | How |
+|---|---|
+| **Start Editor.bat** | Double-click. Starts the GUI without a console window. |
+| `Remnant2SaveEditor.pyw` | Double-click (same thing, if `.pyw` files are associated with Python). |
+| From a terminal | `cd Remnant2Editor` → `python Remnant2SaveEditor.pyw` (shows errors in the console, handy for debugging) |
+| Command line tools | `python -m r2save --help` (see [Command line](#command-line)) |
+
+The editor finds `%USERPROFILE%\Saved Games\Remnant2\Steam\<id>\profile.sav` automatically and opens the world
+save `save_N.sav` of the selected character alongside. Another file: **Open…**.
+
+### 4. Edit
+
+1. **Close Remnant 2 completely** (not just to the main menu).
+2. Make your changes. Every change can be undone (**Undo**, Ctrl+Z); **Changes (N)** lists them.
+3. **Save** (Ctrl+S) — the editor shows the list, backs up the original and writes the file.
+4. Start the game.
 
 Interface language: **RU / EN** buttons in the top-right corner (English by default, the choice is remembered).
+
+## Build a standalone .exe
+
+A single `Remnant2SaveEditor.exe` (~14 MB) that runs **without Python** — handy to keep on the desktop or to give to
+a friend. You need Python only to build it.
+
+### One click
+
+Double-click **`build.bat`** in the editor folder. It:
+
+1. creates a local virtual environment `.venv` (nothing is installed system-wide);
+2. installs [PyInstaller](https://pyinstaller.org) into it;
+3. builds **`dist\Remnant2SaveEditor.exe`** from `Remnant2SaveEditor.spec` and opens the folder.
+
+The first build takes 1–2 minutes (downloading PyInstaller), later ones ~30 seconds.
+
+### Manually
+
+```bat
+cd Remnant2Editor
+python -m venv .venv
+.venv\Scripts\python -m pip install pyinstaller
+.venv\Scripts\python -m PyInstaller --clean --noconfirm Remnant2SaveEditor.spec
+```
+
+### Notes
+
+- The .exe bundles everything: item database, names, icons, the Montserrat font, Tcl/Tk.
+- Settings (`settings.json`) and the error log (`editor.log`) of the .exe live in `%APPDATA%\Remnant2SaveEditor`.
+  If something goes wrong, look at `editor.log` first.
+- **Rebuild after updating the source** — the .exe does not update itself.
+- Windows SmartScreen / Defender may warn about a freshly built, unsigned PyInstaller exe. That is a common false
+  positive; building it yourself from this source is the safe way.
+- `build\`, `dist\` and `.venv\` are ignored by git. The command line (`python -m r2save ...`) still needs Python.
+
+<details>
+<summary>Troubleshooting</summary>
+
+| Problem | Fix |
+|---|---|
+| `Python 3 not found` / `'python' is not recognized` | Reinstall Python with **Add python.exe to PATH**, or run from the folder with `py -3 Remnant2SaveEditor.pyw`. |
+| `No module named tkinter` | Re-run the Python installer → *Modify* → enable **tcl/tk and IDLE**. |
+| The window closes immediately | Run `python Remnant2SaveEditor.pyw` from a terminal to see the error; for the .exe check `%APPDATA%\Remnant2SaveEditor\editor.log`. |
+| "Remnant 2 is running" on save | Close the game completely; check Task Manager for `Remnant2-Win64-Shipping.exe`. |
+| "file changed on disk" on save | The game saved after you opened the editor. Press **Reload** and redo the edits. |
+| Black screen after loading in game | Close the game, **Backups…** → restore the previous `save_N.sav`. |
+
+</details>
 
 ## Safety
 
@@ -138,6 +209,7 @@ re-serializes everything, so lengths, offsets, names tables, chunks and the CRC 
 
 ```
 Remnant2SaveEditor.pyw   GUI entry point (Start Editor.bat runs it)
+build.bat, *.spec        PyInstaller build of dist\Remnant2SaveEditor.exe (see "Build a standalone .exe")
 r2save/core.py           save format: compression, SaveData, objects, all property types, containers
 r2save/nav.py            tree traversal
 r2save/profile.py        Profile → Character → Item / Archetype / Trait
@@ -189,9 +261,12 @@ by Gunfire Games or Gearbox Publishing, and contains no game assets.
 телепорт по камням мира и чекпоинтам, вызов Blood Moon, анализ лута в текущем ролле. Интерфейс на английском
 и русском (кнопки RU / EN).
 
-1. Установи [Python 3.8+](https://www.python.org/downloads/).
-2. Скачай архив (**Code → Download ZIP**) и запусти `Start Editor.bat`.
+1. Установи [Python 3.8+](https://www.python.org/downloads/windows/) (галочка **Add python.exe to PATH**).
+2. Скачай архив (**Code → Download ZIP**), распакуй и запусти `Start Editor.bat`.
 3. **Полностью закрой игру**, внеси изменения, нажми **Save** и запусти игру.
+
+**Сборка .exe без Python:** дважды кликни `build.bat` — через 1–2 минуты появится `dist\Remnant2SaveEditor.exe`
+(один файл ~14 МБ). Настройки и лог `.exe` лежат в `%APPDATA%\Remnant2SaveEditor`.
 
 Перед каждым сохранением делается бэкап (`_editor_backups` рядом с сейвом), откатить можно кнопкой **Backups…**.
 Редактор не даст сохранить, пока запущена игра или если игра успела перезаписать файл. Используй на свой страх и

@@ -13,3 +13,7 @@ _fix/
 
 # Local settings
 settings.json
+
+# PyInstaller build
+build/
+dist/

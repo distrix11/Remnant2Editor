@@ -5,7 +5,23 @@ import os
 LANGS = ("ru", "en")
 _lang = "en"
 
-_SETTINGS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "settings.json")
+
+
+def _settings_path():
+    """Next to the editor when run from source; %APPDATA%\\Remnant2SaveEditor when packaged as .exe
+    (a PyInstaller one-file build unpacks itself into a temporary folder that is deleted on exit)."""
+    import sys
+    if getattr(sys, "frozen", False):
+        base = os.path.join(os.environ.get("APPDATA") or os.path.dirname(sys.executable), "Remnant2SaveEditor")
+        try:
+            os.makedirs(base, exist_ok=True)
+        except OSError:
+            base = os.path.dirname(sys.executable)
+        return os.path.join(base, "settings.json")
+    return os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "settings.json")
+
+
+_SETTINGS = _settings_path()
 
 S = {
     # toolbar

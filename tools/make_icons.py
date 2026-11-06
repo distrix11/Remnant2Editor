@@ -136,6 +136,8 @@ def main():
             finish(img, BASE, "tab_%s%s.png" % (name, suffix))
     for size in (36, 64):
         finish(emblem(size), size, "emblem_%d.png" % size)
+    big = emblem(256).resize((256, 256), Image.LANCZOS)
+    big.save(os.path.join(OUT, "icon.ico"), sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
     print("icons written to", os.path.abspath(OUT))
 
 
