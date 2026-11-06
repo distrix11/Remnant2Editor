@@ -147,7 +147,7 @@ class TeleportTab:
                     name = "▶ " + name
                 self._tp_rows.append(l)
                 iid = len(self._tp_rows) - 1
-                self.tp_t.add(iid, (self._zl(z.label), name, t("type_" + l.type), "✓" if l.discovered else "—",
+                self.tp_t.add(iid, (self._zl(z.label), name, t("type_" + l.type), "✓" if l.discovered else ("⚠" if l.undiscovered_stone else "—"),
                                     "" if z.level is None else z.level, l.name_id),
                               tags=("cur",) if is_cur else (() if l.discovered else ("muted",)))
                 if forced and focus_iid is None and l.safe:
@@ -163,7 +163,10 @@ class TeleportTab:
         link = self._tp_rows[int(sel)]
         w = link.zone.world
         point = self._point_label(link, self._quest_names(w))
-        if not (link.safe and link.discovered and link.zone.visited):
+        if link.undiscovered_stone:
+            if not messagebox.askyesno(TITLE, t("tp_confirm_stone", self._zl(link.zone.label), point)):
+                return
+        elif not (link.safe and link.discovered and link.zone.visited):
             if not messagebox.askyesno(TITLE, t("tp_confirm_risky", self._zl(link.zone.label), point)):
                 return
         if not w.active and not messagebox.askyesno(TITLE, t("tp_confirm_world", self._world_name(w))):

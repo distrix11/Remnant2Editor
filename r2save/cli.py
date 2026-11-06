@@ -223,6 +223,10 @@ def cmd_teleport(args):
     z, l = w.find(args.zone, args.point)
     if l is None:
         sys.exit("point %s not found in zone %s (see: python -m r2save worlds)" % (args.point, args.zone))
+    if l.undiscovered_stone and not args.undiscovered_ok:
+        sys.exit("%s is a world stone you have not discovered yet. Spawning there gave a black screen in testing.\n"
+                 "Pick a discovered stone or a checkpoint, or pass --undiscovered-ok to do it anyway."
+                 % w.describe(z.id, l.name_id))
     old = w.describe(*w.respawn)
     w.teleport(l)
     print("%s: %s -> %s" % (w.name, old, w.describe(*w.respawn)))
@@ -299,6 +303,8 @@ def main(argv=None):
     s.add_argument("zone", type=int)
     s.add_argument("point")
     s.add_argument("--world-slot", type=int, help="world slot (default: active world)")
+    s.add_argument("--undiscovered-ok", action="store_true",
+                   help="allow an undiscovered world stone (known to give a black screen)")
     s.set_defaults(fn=cmd_teleport)
     s = sub.add_parser("bloodmoon", help="show Blood Moon state; --now makes the game roll 100%% on the next zone load")
     s.add_argument("--now", dest="force_event", action="store_true")

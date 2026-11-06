@@ -130,7 +130,7 @@ python -m venv .venv
 | The window closes immediately | Run `python Remnant2SaveEditor.pyw` from a terminal to see the error; for the .exe check `%APPDATA%\Remnant2SaveEditor\editor.log`. |
 | "Remnant 2 is running" on save | Close the game completely; check Task Manager for `Remnant2-Win64-Shipping.exe`. |
 | "file changed on disk" on save | The game saved after you opened the editor. Press **Reload** and redo the edits. |
-| Black screen after loading in game | Close the game, **Backups…** → restore the previous `save_N.sav`. |
+| Black screen after loading in game | Kill the game in Task Manager, **Backups…** → restore the previous `save_N.sav`. Typical cause: teleporting to an undiscovered world stone. |
 
 </details>
 
@@ -156,7 +156,10 @@ python -m venv .venv
 | Archetype XP (0 → level 10) | ✅ |
 | Resource amounts, creating a missing resource from scratch | ✅ |
 | Weapon upgrade level (power / item level recalculated by the game) | ✅ |
-| Teleport, including into an unexplored zone | ✅ |
+| Teleport to world stones and checkpoints you have discovered | ✅ |
+| Teleport to a checkpoint of an unexplored zone | ✅ |
+| Teleport to an **undiscovered world stone** | ❌ black screen on load — the editor warns before it |
+| Teleporting while the game sits in the main menu | ❌ doesn't work — close the game completely |
 | Summon Blood Moon | ✅ |
 | Adding catalog items (rings, amulets, armor…) | ⚠️ same format as tested resources, not checked in game |
 | Trait levels | ⚠️ not checked |
@@ -170,6 +173,8 @@ python -m venv .venv
 - **Deleting items** removes the inventory entry; its small data object stays in the file unreferenced (removing it
   would renumber every reference in the save) until the game rewrites the save. Undo works until you save; after
   that, re-add the item from the catalog or restore a backup.
+- **Teleport to an undiscovered world stone** gives a black screen on load (tested). The GUI marks such stones with ⚠
+  and asks first; the CLI refuses without `--undiscovered-ok`.
 - **Teleport** to transitions or unexplored zones can put you behind a fog wall or skip a quest trigger.
   World stones and checkpoints of discovered zones are the safe choice.
 - **After a forced Blood Moon** the game keeps the chance at 100 %; press *Reset chance (5%)* (the editor warns you).
@@ -250,6 +255,10 @@ pip install pillow && python tools\make_icons.py                                
 ```
 
 ## Changelog
+
+**1.1.2**
+- Undiscovered world stones are marked ⚠ and need an explicit confirmation (black screen on load, tested);
+  the CLI refuses them without `--undiscovered-ok`.
 
 **1.1.1**
 - Teleport shows world stones by their in-game travel-menu names (read from the save, every world and DLC), also in

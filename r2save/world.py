@@ -52,6 +52,12 @@ class Link:
         return self.label if self.type == "Waypoint" else None
 
     @property
+    def undiscovered_stone(self):
+        """A world stone the player has not activated yet. Spawning at one gives a black screen on load
+        (tested: Forlorn Coast / Mournful Promenade). Checkpoints of unexplored zones do work."""
+        return self.type == "Waypoint" and not self.discovered
+
+    @property
     def type(self):
         v = self._v("Type")
         return v.value.name.split("::")[-1] if v is not None else "?"
