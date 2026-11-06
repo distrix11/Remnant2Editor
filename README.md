@@ -160,7 +160,7 @@ python -m venv .venv
 | Teleport to world stones and checkpoints you have discovered | ✅ |
 | Teleport to a checkpoint of an unexplored zone | ✅ |
 | Teleport to an **undiscovered world stone** | ⚠️ mixed: Mournful Promenade (zone already visited) → black screen; The Great Hall (zone not visited) → worked. The editor warns before it |
-| Opening world stones (travel menu) | ⚠️ not checked in game yet |
+| Opening world stones (travel menu) | ✅ all stones of an Awakened King roll appeared and worked; travelling straight to the One True King and killing him completed the story quest |
 | Teleporting while the game sits in the main menu | ❌ doesn't work — close the game completely |
 | Summon Blood Moon | ✅ |
 | Adding catalog items (rings, amulets, armor…) | ⚠️ same format as tested resources, not checked in game |
@@ -258,6 +258,9 @@ pip install pillow && python tools\make_icons.py                                
 ```
 
 ## Changelog
+
+**1.2.1**
+- Opening world stones confirmed in game; the confirmation no longer says "not tested".
 
 **1.2.0**
 - Open world stones: one or all stones of a world become available in the in-game travel menu

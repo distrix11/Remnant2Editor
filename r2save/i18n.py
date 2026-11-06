@@ -127,9 +127,9 @@ S = {
     "stone_opened": ("Открыт камень мира: %s", "World stone opened: %s"),
     "stone_all_open": ("В мире «%s» все камни уже открыты.", "All world stones of “%s” are already open."),
     "stone_open_all_confirm": ("Открыть %d камней мира в «%s»?\n\n%s\n\nОни появятся в меню путешествия "
-                               "камня мира. В игре не проверено — бэкап сделается при сохранении.",
+                               "камня мира. Бэкап сделается при сохранении.",
                                "Open %d world stones in “%s”?\n\n%s\n\nThey will appear in the world stone "
-                               "travel menu. Not tested in game yet — a backup is made on save."),
+                               "travel menu. A backup is made on save."),
     "stone_opened_all": ("Открыто камней мира: %d (%s)", "World stones opened: %d (%s)"),
     "tp_btn": ("Телепорт сюда", "Teleport here"),
     "tp_note": ("Как пользоваться: закрой игру → выбери точку → «Телепорт сюда» → «Сохранить» → загрузись.\n"
