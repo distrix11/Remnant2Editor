@@ -11,12 +11,12 @@ from .. import theme
 from .. import i18n
 from ..i18n import t
 
-from ..core import SaveFile, ByteProp, SaveFormatError
+from ..core import SaveFile, ByteProp, SaveFormatError, KNOWN_FILE_VERSIONS, peek_header
 from ..nav import walk, fmt_value
 from ..profile import Profile, CURRENCIES, ARCHETYPE_MAX_XP
 from ..storage import default_save_dirs, game_running, list_backups, restore, save_dir_of
 from ..world import WorldSave, is_world_save, point_hint, quest_id_of
-from ..doc import Doc, StaleFileError
+from ..doc import Doc, StaleFileError, UnknownFormatError
 from ..itemdb import db, ADD_RULES, world_label, localized
 from ..analyzer import analyze
 
@@ -24,6 +24,7 @@ messagebox = theme
 simpledialog = theme
 
 TITLE = "Remnant 2 Save Editor"
+LOG_HINT = r"%APPDATA%\Remnant2SaveEditor\editor.log"
 RAW_LIMIT = 3000
 TAB_ADD = 4
 TAB_TP = 5

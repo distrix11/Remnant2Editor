@@ -31,7 +31,7 @@ Pure Python · no dependencies · dark Remnant-style GUI + CLI · English / Ру
 | **Blood Moon** | Make the game roll a Blood Moon on the next zone load, then reset the chance afterwards |
 | **World analysis** | Bosses, dungeons, events and item pickups of the current roll, their loot and what you already own; jump straight to the zone |
 | **All fields** | Raw editor for any number / bool / string in `profile.sav` and `save_N.sav` |
-| **Safety** | Automatic backups (the newest 20 per file are kept — configurable), a backup browser with restore, undo (Ctrl+Z), change list, protection against overwriting progress the game saved in the meantime |
+| **Safety** | Every file is checked on load: if writing it back unchanged would not give the same bytes (e.g. a game update changed the format) it opens **read-only**. Automatic backups (the newest 20 per file are kept — configurable), a backup browser with restore, undo (Ctrl+Z), change list, protection against overwriting progress the game saved in the meantime |
 
 <table>
 <tr>
@@ -91,6 +91,9 @@ Check in a terminal (`Win + R` → `cmd`): `python --version` (or `py --version`
 The editor finds `%USERPROFILE%\Saved Games\Remnant2\Steam\<id>\profile.sav` automatically and opens the world
 save `save_N.sav` of the selected character alongside. Another file: **Open…**.
 
+**Platforms:** tested with the **Steam** version on Windows. The Epic folder (`...\Remnant2\EOS\<id>`) is
+searched too but untested; **Xbox / Game Pass saves are not supported** (different storage format).
+
 ### Edit
 
 1. **Close Remnant 2 completely** (not just to the main menu).
@@ -149,6 +152,7 @@ python -m venv .venv
 | `No module named tkinter` | Re-run the Python installer → *Modify* → enable **tcl/tk and IDLE**. |
 | The window closes immediately | Run `python Remnant2SaveEditor.pyw` from a terminal to see the error; for the .exe check `%APPDATA%\Remnant2SaveEditor\editor.log`. |
 | "Remnant 2 is running" on save | Close the game completely; check Task Manager for `Remnant2-Win64-Shipping.exe`. |
+| "read-only" / "could not read" after a game update | The save format changed. Nothing was written. Report it on GitHub Issues or the Nexus page with `%APPDATA%\Remnant2SaveEditor\editor.log`, the game version and your platform. |
 | "file changed on disk" on save | The game saved after you opened the editor. Press **Reload** and redo the edits. |
 | Black screen after loading in game | Kill the game in Task Manager, **Backups…** → restore the previous `save_N.sav`. Possible cause: teleporting to an undiscovered world stone. |
 
@@ -203,7 +207,8 @@ python -m venv .venv
   World stones and checkpoints of discovered zones are the safe choice.
 - **After a forced Blood Moon** the game keeps the chance at 100 %; press *Reset chance (5%)* (the editor warns you).
 - **Steam Cloud:** if Steam ever asks which save to keep, choose the local one.
-- A game update may change the save format. The editor then fails to open the file instead of writing anything.
+- A game update may change the save format. The editor then refuses to open the file or opens it read-only —
+  it never writes a file it does not fully understand.
 
 ## Command line
 
@@ -250,6 +255,7 @@ re-serializes everything, so lengths, offsets, names tables, chunks and the CRC 
 
 ```
 Remnant2SaveEditor.pyw   GUI entry point (Start Editor.bat runs it)
+docs/nexus_description.bbcode  page text for Nexus Mods
 build.bat, *.spec        PyInstaller build of dist\Remnant2SaveEditor\ (see "Build a standalone .exe")
 .github/workflows/      release.yml: builds and publishes a release on a v* tag; test-build.yml: manual trial builds
 tools/release_notes.py  release notes from the changelog below
@@ -291,6 +297,12 @@ Bump `__version__` in `r2save/__init__.py`, add a changelog entry below and push
 on Windows, zips it and publishes the release with this changelog as notes.
 
 ## Changelog
+
+**1.5.0**
+- Saves the editor does not fully understand (e.g. after a game update) open read-only: on load the file must
+  write back byte-for-byte unchanged, otherwise editing and saving are refused. Clear messages for damaged files,
+  unknown formats and failed pre-save checks, with what to report (CLI too).
+- Adding a DLC item asks once per session: without the DLC the item stays locked in the inventory.
 
 **1.4.0**
 - Releases on GitHub: a zipped Windows folder build (no Python needed), built by GitHub Actions from the tag.

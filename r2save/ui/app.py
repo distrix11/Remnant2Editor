@@ -80,6 +80,9 @@ class App(CharacterTab, ResourcesTab, InventoryTab, TraitsTab, AddItemTab, Telep
 
     def _edit(self, doc, desc, fn):
         """Run fn() as one undoable change of doc. desc may be a callable taking fn's result."""
+        if doc is not None and doc.read_only:
+            messagebox.showinfo(TITLE, t("ro_edit", doc.name))
+            return None
         before = doc.snapshot()
         try:
             res = fn()
@@ -238,7 +241,8 @@ class App(CharacterTab, ResourcesTab, InventoryTab, TraitsTab, AddItemTab, Telep
             self.update_idletasks()
             doc = Doc(path)
         except Exception as e:
-            messagebox.showerror(TITLE, t("read_fail", path, e))
+            traceback.print_exc()
+            messagebox.showerror(TITLE, self._read_error(path, e))
             return False
         finally:
             self.config(cursor="")
@@ -258,7 +262,25 @@ class App(CharacterTab, ResourcesTab, InventoryTab, TraitsTab, AddItemTab, Telep
             self.nb.select(TAB_TP if self.wd is not None else TAB_RAW)
         if not quiet:
             self.set_status(t("loaded", os.path.basename(path), len(doc.sf.data.objects)))
+        self._warn_read_only()
         return True
+
+    def _read_error(self, path, e):
+        """A message a player can act on, for a file the editor could not open."""
+        name = os.path.basename(path)
+        if "corrupted" in str(e):
+            return t("err_corrupt", name)
+        version, build = peek_header(path)
+        return t("err_format", name, version if version is not None else "?", build if build is not None else "?",
+                 ", ".join(map(str, KNOWN_FILE_VERSIONS)), LOG_HINT, "%s: %s" % (type(e).__name__, e))
+
+    def _warn_read_only(self):
+        """Tell once per load when a file is open read-only (format not fully understood)."""
+        for d in (self.pd, self.wd):
+            if d is not None and d.read_only:
+                version, build = peek_header(d.path)
+                self.set_status(t("ro_status", d.name), dirty=True)
+                messagebox.showinfo(TITLE, t("ro_format", d.name, version, build, LOG_HINT))
 
     def _load_world_for(self, char):
         """Open save_<slot>.sav next to profile.sav (teleport, analysis)."""
@@ -272,7 +294,7 @@ class App(CharacterTab, ResourcesTab, InventoryTab, TraitsTab, AddItemTab, Telep
         except Exception as e:
             traceback.print_exc()
             self.wd, self.ws = None, None
-            self.set_status(t("read_fail", p, e).replace("\n", " "))
+            self.set_status(t("world_read_fail", os.path.basename(p), LOG_HINT), dirty=True)
 
     def _apply_loaded(self):
         """Push the loaded data into the (possibly freshly rebuilt) widgets."""
@@ -389,8 +411,12 @@ class App(CharacterTab, ResourcesTab, InventoryTab, TraitsTab, AddItemTab, Telep
                 baks.append(d.save(check_game=False))
         except StaleFileError as e:
             return messagebox.showerror(TITLE, t("stale_save", str(e), len(self.log)))
+        except UnknownFormatError as e:
+            return messagebox.showerror(TITLE, t("err_ro_save", str(e)))
         except Exception as e:
             traceback.print_exc()
+            if "verification failed" in str(e) or "unknown save format" in str(e):
+                return messagebox.showerror(TITLE, t("err_verify", LOG_HINT, e))
             return messagebox.showerror(TITLE, t("not_saved", e))
         bak = "\n".join(str(b) for b in baks)
         self.load(self.main_doc.path, quiet=True)

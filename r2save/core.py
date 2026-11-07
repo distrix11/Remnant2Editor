@@ -14,7 +14,7 @@ __all__ = [
     "SaveFile", "SaveData", "UObject", "Component", "PropertyBag", "Property",
     "FName", "ObjectRef", "StructProp", "ArrayProp", "ArrayStructProp", "MapProp",
     "ByteProp", "EnumProp", "TextProp", "Variables", "Variable",
-    "PersistenceContainer", "Actor", "decompress", "compress", "SaveFormatError",
+    "PersistenceContainer", "Actor", "decompress", "compress", "SaveFormatError", "KNOWN_FILE_VERSIONS", "peek_header",
 ]
 
 PROFILE_CLASS = "/Game/_Core/Blueprints/Base/BP_RemnantSaveGameProfile"
@@ -22,6 +22,28 @@ PROFILE_CLASS = "/Game/_Core/Blueprints/Base/BP_RemnantSaveGameProfile"
 CHUNK_TAG = 0x222222229E2A83C1
 CHUNK_SIZE = 0x20000
 COMPRESSOR_ZLIB = 3
+
+
+# File format version of every save the editor was tested on (header field; the game build number changes
+# with patches and is only reported).
+KNOWN_FILE_VERSIONS = (9,)
+
+
+def peek_header(path):
+    """(file format version, game build) read straight from the file, or (None, None)."""
+    try:
+        with open(path, "rb") as f:
+            head = f.read(12)
+        version = struct.unpack_from("<I", head, 8)[0] if len(head) >= 12 else None
+        build = None
+        try:
+            buf = decompress(open(path, "rb").read())
+            build = struct.unpack_from("<i", buf, 12)[0]
+        except Exception:
+            pass
+        return version, build
+    except OSError:
+        return None, None
 
 
 class SaveFormatError(Exception):
@@ -52,7 +74,10 @@ def decompress(data):
         if comp != COMPRESSOR_ZLIB:
             raise SaveFormatError("unknown compressor %d" % comp)
         p += _CHUNK_HDR.size
-        raw = zlib.decompress(data[p:p + c1])
+        try:
+            raw = zlib.decompress(data[p:p + c1])
+        except zlib.error as e:
+            raise SaveFormatError("file is corrupted: chunk %d does not decompress (%s)" % (n, e))
         if len(raw) != d1:
             raise SaveFormatError("chunk %d: size mismatch" % n)
         out += raw
@@ -1150,6 +1175,20 @@ class SaveFile:
     def load(cls, path):
         with open(path, "rb") as f:
             return cls.from_buffer(decompress(f.read()))
+
+    @classmethod
+    def load_checked(cls, path):
+        """Load and test that the parser understands the whole file: writing it back unchanged must give the
+        same bytes. Returns (SaveFile, exact). exact=False means an unknown format detail (e.g. after a game
+        patch); such a file must not be saved."""
+        with open(path, "rb") as f:
+            buf = decompress(f.read())
+        sf = cls.from_buffer(buf)
+        try:
+            exact = sf.to_buffer() == buf
+        except Exception:
+            exact = False
+        return sf, exact
 
     def to_buffer(self):
         w = Writer()

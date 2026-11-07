@@ -104,6 +104,11 @@ class AddItemTab:
         name = db().item_name(e)
         if e["ProfileId"].lower() in self._owned_paths():
             return messagebox.showinfo(TITLE, t("already_have", name))
+        world = e.get("World") or ""
+        if world.startswith("World_DLC") and not getattr(self, "_dlc_ok", False):
+            if not messagebox.askyesno(TITLE, t("dlc_confirm", name, world_label(world))):
+                return
+            self._dlc_ok = True       # ask once per session
         inst, has_qty = ADD_RULES[e["Type"]]
         qty = None
         if has_qty:

@@ -1,0 +1,94 @@
+[center][size=6][b]Remnant 2 Save Editor[/b][/size]
+[size=3]Analyze and edit your Remnant 2 saves — resources, items, archetypes, teleport, world stones, Blood Moon, world loot.[/size]
+[size=2]Free & open source · English / Русский · v1.5.0[/size][/center]
+
+[line]
+
+[size=4][b]⚠ Read first[/b][/size]
+[list]
+[*][b]Close the game completely[/b] (not just to the main menu) before saving. The editor refuses to save while Remnant 2 is running.
+[*]Every save makes an automatic [b]backup[/b]; the [b]Backups…[/b] window restores any of them.
+[*]Unofficial fan tool, use it in [b]solo play[/b] and at your own risk.
+[*]Tested with the [b]Steam[/b] version on Windows. Epic is untested. [b]Xbox / Game Pass saves are not supported.[/b]
+[/list]
+
+[line]
+
+[size=4][b]Features[/b][/size]
+[list]
+[*][b]Character[/b] — archetype XP (one-click max level), power level, trait rank and trait points.
+[*][b]Resources[/b] — Scrap, Lumenite, Relic Dust, irons, Blood Moon Essence, DLC alloys…
+[*][b]Inventory[/b] — quantities and upgrade levels, capped at the game's maximum ([b]+10 for boss / special weapons[/b], +20 standard, 10 mutators). Delete rings, amulets, armor, mutators, consumables and materials (refuses anything equipped, attached or bound to the radial menu).
+[*][b]Quest items[/b] — see the quest items each world keeps (keys, coins…); duplicate Crimson King Coins.
+[*][b]Traits[/b] — trait levels with a live budget: warns before you overspend.
+[*][b]Add item[/b] — catalog of ~700 rings, amulets, armor, relics, engrams, mutators, consumables and materials, with "where to get it in game".
+[*][b]Teleport[/b] — choose where you spawn on the next load: world stones (with their in-game names) and checkpoints.
+[*][b]Open world stones[/b] — make one or all world stones of a world available in the in-game travel menu.
+[*][b]Blood Moon[/b] — make the game roll a Blood Moon on the next zone load.
+[*][b]World analysis[/b] — bosses, dungeons, events and pickups of your current roll, their loot and what you already own. Handy for checking a reroll without walking the map (works while the game is running — just don't save).
+[*][b]All fields[/b] — raw editor for any value in [i]profile.sav[/i] / [i]save_N.sav[/i].
+[*][b]Safety[/b] — undo (Ctrl+Z), list of changes, backup rotation, refuses to overwrite progress the game saved in the meantime, and opens a save [b]read-only[/b] if its format is not fully understood (e.g. after a game update).
+[/list]
+
+[line]
+
+[size=4][b]Installation[/b][/size]
+[list=1]
+[*]Download the main file and unpack the [b]whole[/b] archive anywhere (e.g. your Documents).
+[*]Run [b]Remnant2SaveEditor\Remnant2SaveEditor.exe[/b]. Keep it inside its folder next to [i]_internal[/i] — it doesn't start on its own. A desktop shortcut is fine.
+[*]The editor finds your saves automatically ([i]%USERPROFILE%\Saved Games\Remnant2\Steam\<id>[/i]); otherwise use [b]Open…[/b].
+[/list]
+No Python needed. Uninstall: delete the folder (settings live in [i]%APPDATA%\Remnant2SaveEditor[/i]).
+
+Prefer to run from source? Everything is on [url=https://github.com/distrix11/Remnant2Editor]GitHub[/url] — [i]Start Editor.bat[/i] (needs Python 3.8+) or build the exe yourself with [i]build.bat[/i].
+
+[line]
+
+[size=4][b]What has been tested in game[/b][/size]
+[list]
+[*]✅ Resources (also creating missing ones), archetype XP, weapon upgrade levels.
+[*]✅ Teleport to discovered world stones and to checkpoints (also in unexplored zones).
+[*]✅ Opening all world stones of an adventure — travelling straight to the boss and killing him completed the story quest.
+[*]✅ Duplicating Crimson King Coins — the Red Prince accepted the tribute and [i]Succession[/i] unlocked.
+[*]✅ Summoning a Blood Moon.
+[*]⚠ [b]Not checked in game yet:[/b] adding catalog items (same format as the tested resources), deleting items, trait levels, teleport to [b]undiscovered[/b] world stones (one test gave a black screen, another worked — the editor warns you).
+[*]ℹ Items from a DLC you don't own stay locked in the inventory (same as DLC items received in co-op).
+[/list]
+
+[line]
+
+[size=4][b]Antivirus[/b][/size]
+The exe is built with PyInstaller and is not code-signed — a common source of false positives. This release is the [b]folder build[/b]: in testing, Windows Defender did not flag it and VirusTotal showed one heuristic hit out of ~70. The exact same file is built automatically by GitHub Actions from the public source, so you can check what goes into it (or build it yourself).
+
+[line]
+
+[size=4][b]Bug reports[/b][/size]
+Please use the [b]Bugs[/b] tab here or [url=https://github.com/distrix11/Remnant2Editor/issues]GitHub Issues[/url] and include:
+[list]
+[*]what you did and what happened;
+[*]the log file [i]%APPDATA%\Remnant2SaveEditor\editor.log[/i];
+[*]game version and platform (Steam / Epic).
+[/list]
+If a game update changes the save format, the editor opens your save read-only and tells you — nothing gets written. That is the moment to report it. This is a hobby project shared as is; I answer when I can.
+
+[line]
+
+[size=4][b]Credits & permissions[/b][/size]
+[list]
+[*]Item database: [url=https://github.com/AndrewSav/lib.remnant2.analyzer]lib.remnant2.analyzer[/url] by Andrew Savinykh (MIT). The save format code is a Python port of [url=https://github.com/AndrewSav/lib.remnant2.saves]lib.remnant2.saves[/url] by Andrew Savinykh (MIT).
+[*]Localized item names: [url=https://github.com/Angelore/remnant-two-overseer]RemnantOverseer[/url] by Angelore (MIT).
+[*]Font: [url=https://github.com/JulietaUla/Montserrat]Montserrat[/url] (SIL OFL 1.1).
+[*]The editor itself is MIT licensed — source on [url=https://github.com/distrix11/Remnant2Editor]GitHub[/url].
+[*]Remnant and Remnant II are trademarks of their respective owners. Not affiliated with Gunfire Games or Gearbox Publishing; contains no game files.
+[/list]
+
+[spoiler]
+[size=4][b]На русском[/b][/size]
+Неофициальный редактор сохранений Remnant 2: ресурсы, предметы, XP архетипов, телепорт по камням мира и чекпоинтам, открытие камней мира, Blood Moon, анализ лута в текущем ролле. Интерфейс на английском и русском (кнопки RU / EN справа сверху).
+[list=1]
+[*]Распакуй архив [b]целиком[/b] и запусти [b]Remnant2SaveEditor\Remnant2SaveEditor.exe[/b] — не вынимай его из папки, рядом должна лежать [i]_internal[/i].
+[*][b]Полностью закрой игру[/b] перед сохранением. Бэкап делается автоматически, откатить можно через [b]Backups…[/b].
+[*]Проверено на Steam-версии. Xbox / Game Pass не поддерживается.
+[/list]
+Об ошибках — во вкладку Bugs или на GitHub, приложи [i]%APPDATA%\Remnant2SaveEditor\editor.log[/i].
+[/spoiler]

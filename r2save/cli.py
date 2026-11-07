@@ -308,6 +308,25 @@ def cmd_bloodmoon(args):
     print("saved %s (backup: %s)" % (path, bak))
 
 
+def _friendly_errors(fn, args):
+    """Turn format problems into a message a player can act on."""
+    from .core import SaveFormatError, KNOWN_FILE_VERSIONS
+    try:
+        return fn(args)
+    except SaveFormatError as e:
+        if "corrupted" in str(e):
+            sys.exit("error: the save file is damaged or still being written by the game (checksum mismatch).\n"
+                     "Wait a moment and retry; if it persists, restore a backup.")
+        sys.exit("error: could not read the save (%s).\nMost likely a game update changed the save format "
+                 "(tested with format version %s). Nothing was changed.\nPlease report it: "
+                 "https://github.com/distrix11/Remnant2Editor/issues" % (e, ", ".join(map(str, KNOWN_FILE_VERSIONS))))
+    except RuntimeError as e:
+        if "verification failed" in str(e) or "unknown save format" in str(e):
+            sys.exit("error: not saved - %s\nYour file was not touched. Please report it: "
+                     "https://github.com/distrix11/Remnant2Editor/issues" % e)
+        raise
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="r2save", description="Remnant 2 save editor (CLI)")
     from . import __version__
@@ -387,7 +406,7 @@ def main(argv=None):
     args = ap.parse_args(argv)
     if args.cmd == "currency" and args.name is not None and args.amount is None:
         ap.error("currency: amount required")
-    args.fn(args)
+    _friendly_errors(args.fn, args)
 
 
 if __name__ == "__main__":

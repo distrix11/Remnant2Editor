@@ -319,6 +319,53 @@ S = {
     "qi_copies": ("Сколько копий добавить?", "How many copies to add?"),
     "qi_dup_btn": ("Дублировать…", "Duplicate…"),
     "qi_done": ("%s: +%d", "%s: +%d"),
+    # unreadable / unknown save format (e.g. after a game update)
+    "err_corrupt": ("Файл %s повреждён или ещё записывается игрой: не сошлась контрольная сумма.\n\n"
+                    "Подожди пару секунд и нажми «Перезагрузить». Если повторяется — восстанови бэкап "
+                    "через «Бэкапы…».",
+                    "%s is damaged or the game is still writing it: the checksum does not match.\n\n"
+                    "Wait a few seconds and press Reload. If it keeps happening, restore a backup via Backups…."),
+    "err_format": ("Редактор не смог разобрать %s.\n\nСкорее всего, после обновления игры изменился формат "
+                   "сохранений (версия формата: %s, сборка игры: %s; проверено на версии %s). Файл не изменён.\n\n"
+                   "Сообщи об этом на GitHub (Issues) или на странице мода на Nexus Mods и приложи файл\n%s\n\n"
+                   "Техническая причина: %s",
+                   "The editor could not read %s.\n\nMost likely a game update changed the save format (format "
+                   "version: %s, game build: %s; tested with version %s). The file was not changed.\n\n"
+                   "Please report it on GitHub (Issues) or on the Nexus Mods page and attach\n%s\n\n"
+                   "Technical reason: %s"),
+    "ro_format": ("%s открыт только для просмотра.\n\nВ файле есть данные, которые редактор пока не умеет "
+                  "записывать без потерь — скорее всего, после обновления игры (версия формата %s, сборка %s). "
+                  "Смотреть и анализировать можно, сохранять — нет, файл не изменится.\n\n"
+                  "Сообщи об этом на GitHub или Nexus Mods и приложи\n%s",
+                  "%s is open read-only.\n\nIt contains data the editor cannot write back without loss yet — most "
+                  "likely after a game update (format version %s, game build %s). You can view and analyze it, "
+                  "but not save it; the file will not change.\n\nPlease report it on GitHub or Nexus Mods and "
+                  "attach\n%s"),
+    "ro_status": ("⚠ %s: только просмотр (формат не поддерживается полностью)",
+                  "⚠ %s: read-only (format not fully supported)"),
+    "ro_edit": ("%s открыт только для просмотра: его формат после обновления игры поддерживается не полностью, "
+                "поэтому менять его редактор не даёт.",
+                "%s is open read-only: its format (after a game update) is not fully supported, so the editor does "
+                "not change it."),
+    "err_ro_save": ("Сохранение отменено: %s открыт только для просмотра — его формат после обновления игры "
+                    "поддерживается не полностью. Твой файл не тронут.",
+                    "Not saved: %s is open read-only — its format (after a game update) is not fully supported. "
+                    "Your file was not touched."),
+    "err_verify": ("Сохранение отменено: проверка перед записью не прошла, и редактор не может гарантировать, что "
+                   "запишет файл без потерь. Твой файл не тронут.\n\nСообщи об этом на GitHub или Nexus Mods и "
+                   "приложи\n%s\n\nТехническая причина: %s",
+                   "Not saved: the check before writing failed, so the editor cannot guarantee the file would be "
+                   "written without loss. Your file was not touched.\n\nPlease report it on GitHub or Nexus Mods "
+                   "and attach\n%s\n\nTechnical reason: %s"),
+    "world_read_fail": ("⚠ Не удалось прочитать %s — телепорт и анализ мира недоступны. Подробности: %s",
+                        "⚠ Could not read %s — teleport and world analysis are unavailable. Details: %s"),
+    "dlc_confirm": ("«%s» — предмет из %s.\n\nЕсли этого DLC у тебя нет, предмет появится в инвентаре, но останется "
+                    "заблокированным, пока DLC не куплено: так игра обращается с DLC-предметами, полученными в "
+                    "кооперативе, так что сейв это ломать не должно (без DLC не проверялось).\n\nДобавить? "
+                    "(Больше в этой сессии не спрошу.)",
+                    "“%s” comes from %s.\n\nIf you don't own that DLC, the item will be in your inventory but stays "
+                    "locked until you buy it — that is how the game treats DLC items received in co-op, so it should "
+                    "not break the save (not tested without the DLC).\n\nAdd it? (Asked once per session.)"),
     # about
     "about_title": ("О программе", "About"),
     "about_version": ("Версия %s", "Version %s"),

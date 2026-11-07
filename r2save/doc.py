@@ -5,6 +5,10 @@ from .core import SaveFile
 from .storage import safe_write
 
 
+class UnknownFormatError(RuntimeError):
+    """The file contains something the parser does not reproduce exactly; saving could lose data."""
+
+
 class StaleFileError(RuntimeError):
     """The file on disk changed after we loaded it (the game saved in the meantime)."""
 
@@ -30,9 +34,14 @@ class Doc:
         return os.path.basename(self.path)
 
     def reload(self):
-        self.sf = SaveFile.load(self.path)
+        self.sf, self.exact = SaveFile.load_checked(self.path)
         self.stamp = file_stamp(self.path)
         self.history = []
+
+    @property
+    def read_only(self):
+        """The editor does not fully understand this file (see SaveFile.load_checked): never write it."""
+        return not self.exact
 
     @property
     def dirty(self):
@@ -56,6 +65,8 @@ class Doc:
         return desc
 
     def save(self, check_game=True):
+        if self.read_only:
+            raise UnknownFormatError(self.name)
         if self.changed_on_disk():
             raise StaleFileError(self.name)
         bak = safe_write(self.sf, self.path, make_backup=True, check_game=check_game)

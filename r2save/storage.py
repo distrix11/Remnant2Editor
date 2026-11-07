@@ -90,6 +90,9 @@ def safe_write(sf, path, make_backup=True, check_game=True):
     Returns the backup path (or None)."""
     if check_game and game_running():
         raise RuntimeError("Remnant 2 is running. Close the game (fully, to the desktop) before saving.")
+    if os.path.exists(path) and not SaveFile.load_checked(path)[1]:
+        raise RuntimeError("unknown save format: %s does not round-trip byte-exactly (game update?). "
+                           "Saving is refused so nothing gets lost." % os.path.basename(path))
     buf = sf.to_buffer()
     data = sf.to_bytes()
     # verification: the compressed bytes must decompress to exactly what we serialized,
