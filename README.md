@@ -116,6 +116,8 @@ python -m venv .venv
 - The .exe bundles everything: item database, names, icons, the Montserrat font, Tcl/Tk.
 - Settings (`settings.json`) and the error log (`editor.log`) of the .exe live in `%APPDATA%\Remnant2SaveEditor`.
   If something goes wrong, look at `editor.log` first.
+- **Folder build:** `set R2_ONEDIR=1` before `build.bat` builds `dist\Remnant2SaveEditor\` (exe + `_internal`)
+  instead of one self-extracting file; antivirus heuristics usually complain less about it.
 - **Rebuild after updating the source** — the .exe does not update itself. The version is shown in the **?** (About)
   window and in the exe's *Properties → Details*; both come from `__version__` in `r2save/__init__.py`.
 - Windows SmartScreen / Defender may warn about a freshly built, unsigned PyInstaller exe. That is a common false

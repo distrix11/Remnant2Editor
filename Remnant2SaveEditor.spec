@@ -55,12 +55,11 @@ a = Analysis(
 )
 pyz = PYZ(a.pure)
 
-exe = EXE(
-    pyz,
-    a.scripts,
-    a.binaries,
-    a.datas,
-    [],
+# R2_ONEDIR=1 builds a folder (exe + _internal) instead of a single self-extracting exe.
+# The folder build unpacks nothing at start-up and usually triggers fewer antivirus heuristics.
+ONEDIR = os.environ.get("R2_ONEDIR") == "1"
+
+exe_options = dict(
     name="Remnant2SaveEditor",
     icon="r2save/assets/icon.ico",
     version=_version_file(),
@@ -69,3 +68,9 @@ exe = EXE(
     debug=False,
     strip=False,
 )
+
+if ONEDIR:
+    exe = EXE(pyz, a.scripts, [], exclude_binaries=True, **exe_options)
+    coll = COLLECT(exe, a.binaries, a.datas, strip=False, upx=False, name="Remnant2SaveEditor")
+else:
+    exe = EXE(pyz, a.scripts, a.binaries, a.datas, [], **exe_options)

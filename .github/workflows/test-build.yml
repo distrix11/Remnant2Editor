@@ -1,0 +1,54 @@
+# Trial Windows builds for comparing antivirus results (one file vs. folder).
+# Run it from the Actions tab ("Run workflow"); the results are downloadable artifacts,
+# nothing is published as a release.
+name: Test build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [".github/workflows/test-build.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build (${{ matrix.mode }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [onefile, onedir]
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install PyInstaller
+        run: python -m pip install --disable-pip-version-check pyinstaller==6.22.3
+
+      - name: Check the source
+        run: |
+          python -m compileall -q r2save Remnant2SaveEditor.pyw
+          python -m r2save --version
+
+      - name: Build
+        env:
+          R2_ONEDIR: ${{ matrix.mode == 'onedir' && '1' || '0' }}
+        run: python -m PyInstaller --clean --noconfirm Remnant2SaveEditor.spec
+
+      - name: Checksums
+        shell: pwsh
+        run: |
+          Get-ChildItem dist -Recurse -Filter Remnant2SaveEditor.exe |
+            ForEach-Object { "{0}  {1}  {2:N0} bytes" -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash, $_.FullName, $_.Length }
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: Remnant2SaveEditor-${{ matrix.mode }}
+          path: dist/
+          retention-days: 14
+          if-no-files-found: error
