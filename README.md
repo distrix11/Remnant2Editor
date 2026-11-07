@@ -285,9 +285,10 @@ pip install pillow && python tools\make_icons.py                                
 
 ## Releasing
 
-Bump `__version__` in `r2save/__init__.py`, add a changelog entry below, commit, then
-`git tag vX.Y.Z && git push origin vX.Y.Z`. The *Release* workflow checks that the tag matches `__version__`, builds
-the folder build on Windows, zips it and publishes the release with this changelog as notes.
+Bump `__version__` in `r2save/__init__.py`, add a changelog entry below and push to `main`. Then either press
+**Actions → Release → Run workflow** (it creates the tag `v<__version__>` on that commit), or push a tag yourself:
+`git tag vX.Y.Z && git push origin vX.Y.Z`. The workflow checks the tag against `__version__`, builds the folder build
+on Windows, zips it and publishes the release with this changelog as notes.
 
 ## Changelog
 

@@ -1,10 +1,12 @@
-# Publishes a GitHub release when a version tag is pushed (git tag v1.4.0 && git push origin v1.4.0).
+# Publishes a GitHub release: either push a version tag (git tag v1.4.0 && git push origin v1.4.0), or press
+# "Run workflow" on the Actions tab - then the tag v<__version__> is created on the current main commit.
 # Builds the Windows folder build, zips it and attaches it; notes come from the README changelog.
 name: Release
 
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -19,11 +21,23 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Tag must match __version__
+      - name: Version and tag
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           $v = python -c "import r2save; print(r2save.__version__)"
-          if ("v$v" -ne "${{ github.ref_name }}") { throw "tag ${{ github.ref_name }} does not match __version__ $v" }
+          if ("${{ github.ref_type }}" -eq "tag") {
+            $tag = "${{ github.ref_name }}"
+            if ($tag -ne "v$v") { throw "tag $tag does not match __version__ $v" }
+          } else {
+            $tag = "v$v"
+            gh release view $tag *> $null
+            if ($LASTEXITCODE -eq 0) { throw "release $tag already exists - bump __version__ first" }
+            $global:LASTEXITCODE = 0
+          }
+          "TAG=$tag" >> $env:GITHUB_ENV
+          "Releasing $tag from ${{ github.sha }}"
 
       - name: Install PyInstaller
         run: python -m pip install --disable-pip-version-check pyinstaller==6.22.3
@@ -34,7 +48,7 @@ jobs:
       - name: Package
         shell: pwsh
         run: |
-          $zip = "Remnant2SaveEditor-${{ github.ref_name }}-win64.zip"
+          $zip = "Remnant2SaveEditor-$env:TAG-win64.zip"
           Compress-Archive -Path dist/Remnant2SaveEditor -DestinationPath $zip
           $sha = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
           "$sha  $zip"
@@ -48,9 +62,9 @@ jobs:
         run: |
           $count = gh release list --limit 1 --json tagName --jq length
           if ($count -eq "0") {
-            python tools/release_notes.py "${{ github.ref_name }}" --zip $env:ZIP --sha $env:SHA --all -o notes.md
+            python tools/release_notes.py $env:TAG --zip $env:ZIP --sha $env:SHA --all -o notes.md
           } else {
-            python tools/release_notes.py "${{ github.ref_name }}" --zip $env:ZIP --sha $env:SHA -o notes.md
+            python tools/release_notes.py $env:TAG --zip $env:ZIP --sha $env:SHA -o notes.md
           }
           Get-Content notes.md
 
@@ -58,4 +72,4 @@ jobs:
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${{ github.ref_name }}" $env:ZIP --title "Remnant 2 Save Editor ${{ github.ref_name }}" --notes-file notes.md
+        run: gh release create $env:TAG $env:ZIP --target "${{ github.sha }}" --title "Remnant 2 Save Editor $env:TAG" --notes-file notes.md
