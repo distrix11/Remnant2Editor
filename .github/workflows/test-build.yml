@@ -1,13 +1,10 @@
-# Trial Windows builds for comparing antivirus results (one file vs. folder).
-# Run it from the Actions tab ("Run workflow"); the results are downloadable artifacts,
-# nothing is published as a release.
+# Trial Windows builds for comparing antivirus results (folder vs. one file).
+# Run it by hand from the Actions tab ("Run workflow"); the results are downloadable artifacts,
+# nothing is published as a release. Releases are built by release.yml.
 name: Test build
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: [".github/workflows/test-build.yml"]
 
 permissions:
   contents: read
@@ -19,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode: [onefile, onedir]
+        mode: [onedir, onefile]
     steps:
       - uses: actions/checkout@v5
 
@@ -37,7 +34,7 @@ jobs:
 
       - name: Build
         env:
-          R2_ONEDIR: ${{ matrix.mode == 'onedir' && '1' || '0' }}
+          R2_ONEFILE: ${{ matrix.mode == 'onefile' && '1' || '0' }}
         run: python -m PyInstaller --clean --noconfirm Remnant2SaveEditor.spec
 
       - name: Checksums

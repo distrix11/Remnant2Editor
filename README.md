@@ -52,7 +52,20 @@ Pure Python · no dependencies · dark Remnant-style GUI + CLI · English / Ру
 
 ## Getting started
 
-### 1. Install Python (once)
+### Quickest: download a release (no Python)
+
+1. Open [**Releases**](https://github.com/distrix11/Remnant2Editor/releases/latest) and download
+   `Remnant2SaveEditor-vX.Y.Z-win64.zip`.
+2. Unpack the whole archive anywhere and run **`Remnant2SaveEditor\Remnant2SaveEditor.exe`**. Keep the exe inside
+   its folder, next to `_internal` — it does not start on its own.
+3. Continue with [Edit](#edit).
+
+Release builds are made by GitHub Actions straight from the tagged source (the *Release* workflow), so anyone can
+check what went into them.
+
+### Or run from source
+
+#### 1. Install Python (once)
 
 Download **Python 3.8 or newer** from [python.org](https://www.python.org/downloads/windows/) and run the installer:
 
@@ -61,12 +74,12 @@ Download **Python 3.8 or newer** from [python.org](https://www.python.org/downlo
 
 Check in a terminal (`Win + R` → `cmd`): `python --version` (or `py --version`) should print 3.8+.
 
-### 2. Get the editor
+#### 2. Get the editor
 
 - **Code → Download ZIP** on this page and unpack it anywhere, **or**
 - `git clone https://github.com/distrix11/Remnant2Editor.git`
 
-### 3. Run it
+#### 3. Run it
 
 | Way | How |
 |---|---|
@@ -78,7 +91,7 @@ Check in a terminal (`Win + R` → `cmd`): `python --version` (or `py --version`
 The editor finds `%USERPROFILE%\Saved Games\Remnant2\Steam\<id>\profile.sav` automatically and opens the world
 save `save_N.sav` of the selected character alongside. Another file: **Open…**.
 
-### 4. Edit
+### Edit
 
 1. **Close Remnant 2 completely** (not just to the main menu).
 2. Make your changes. Every change can be undone (**Undo**, Ctrl+Z); **Changes (N)** lists them.
@@ -89,8 +102,8 @@ Interface language: **RU / EN** buttons in the top-right corner (English by defa
 
 ## Build a standalone .exe
 
-A single `Remnant2SaveEditor.exe` (~14 MB) that runs **without Python** — handy to keep on the desktop or to give to
-a friend. You need Python only to build it.
+A `Remnant2SaveEditor` folder with `Remnant2SaveEditor.exe` (~35 MB in total) that runs **without Python** — the same
+thing the releases contain. You need Python only to build it.
 
 ### One click
 
@@ -98,7 +111,9 @@ Double-click **`build.bat`** in the editor folder. It:
 
 1. creates a local virtual environment `.venv` (nothing is installed system-wide);
 2. installs [PyInstaller](https://pyinstaller.org) into it;
-3. builds **`dist\Remnant2SaveEditor.exe`** from `Remnant2SaveEditor.spec` and opens the folder.
+3. builds **`dist\Remnant2SaveEditor\Remnant2SaveEditor.exe`** from `Remnant2SaveEditor.spec` and opens the folder.
+
+`build.bat onefile` builds a single self-extracting `dist\Remnant2SaveEditor.exe` instead (see the antivirus note).
 
 The first build takes 1–2 minutes (downloading PyInstaller), later ones ~30 seconds.
 
@@ -116,12 +131,13 @@ python -m venv .venv
 - The .exe bundles everything: item database, names, icons, the Montserrat font, Tcl/Tk.
 - Settings (`settings.json`) and the error log (`editor.log`) of the .exe live in `%APPDATA%\Remnant2SaveEditor`.
   If something goes wrong, look at `editor.log` first.
-- **Folder build:** `set R2_ONEDIR=1` before `build.bat` builds `dist\Remnant2SaveEditor\` (exe + `_internal`)
-  instead of one self-extracting file; antivirus heuristics usually complain less about it.
+- **Keep the exe in its folder.** It loads Python and the libraries from `_internal` next to it; copy or move the
+  whole `Remnant2SaveEditor` folder, or make a desktop shortcut to the exe.
 - **Rebuild after updating the source** — the .exe does not update itself. The version is shown in the **?** (About)
   window and in the exe's *Properties → Details*; both come from `__version__` in `r2save/__init__.py`.
-- Windows SmartScreen / Defender may warn about a freshly built, unsigned PyInstaller exe. That is a common false
-  positive; building it yourself from this source is the safe way.
+- **Antivirus:** unsigned PyInstaller exes are a common false positive. In testing (Nov 2026) Windows Defender
+  flagged the one-file build (`Trojan:Win32/Wacatac.B!ml`, a machine-learning heuristic) but not the folder build;
+  VirusTotal showed 1 heuristic hit out of ~70 for the folder build. That is why the folder build is the default.
 - `build\`, `dist\` and `.venv\` are ignored by git. The command line (`python -m r2save ...`) still needs Python.
 
 <details>
@@ -234,7 +250,9 @@ re-serializes everything, so lengths, offsets, names tables, chunks and the CRC 
 
 ```
 Remnant2SaveEditor.pyw   GUI entry point (Start Editor.bat runs it)
-build.bat, *.spec        PyInstaller build of dist\Remnant2SaveEditor.exe (see "Build a standalone .exe")
+build.bat, *.spec        PyInstaller build of dist\Remnant2SaveEditor\ (see "Build a standalone .exe")
+.github/workflows/      release.yml: builds and publishes a release on a v* tag; test-build.yml: manual trial builds
+tools/release_notes.py  release notes from the changelog below
 r2save/core.py           save format: compression, SaveData, objects, all property types, containers
 r2save/nav.py            tree traversal
 r2save/profile.py        Profile → Character → Item / Archetype / Trait
@@ -265,9 +283,17 @@ python tests\edit_test.py "<save folder>\profile.sav" "%TEMP%\r2test"           
 pip install pillow && python tools\make_icons.py                                    :: rebuild icons
 ```
 
+## Releasing
+
+Bump `__version__` in `r2save/__init__.py`, add a changelog entry below, commit, then
+`git tag vX.Y.Z && git push origin vX.Y.Z`. The *Release* workflow checks that the tag matches `__version__`, builds
+the folder build on Windows, zips it and publishes the release with this changelog as notes.
+
 ## Changelog
 
 **1.4.0**
+- Releases on GitHub: a zipped Windows folder build (no Python needed), built by GitHub Actions from the tag.
+  `build.bat` now builds that folder by default; `build.bat onefile` builds one exe (Defender flagged that one).
 - Upgrade levels are capped per item: special / boss weapons +10, standard weapons +20, mutators 10. The inventory
   shows `+7 / 10`, the level prompt says which kind it is, `set-level` refuses higher values.
 
@@ -333,8 +359,13 @@ by Gunfire Games or Gearbox Publishing, and contains no game assets.
 2. Скачай архив (**Code → Download ZIP**), распакуй и запусти `Start Editor.bat`.
 3. **Полностью закрой игру**, внеси изменения, нажми **Save** и запусти игру.
 
-**Сборка .exe без Python:** дважды кликни `build.bat` — через 1–2 минуты появится `dist\Remnant2SaveEditor.exe`
-(один файл ~14 МБ). Настройки и лог `.exe` лежат в `%APPDATA%\Remnant2SaveEditor`.
+**Готовая программа без Python:** на странице [Releases](https://github.com/distrix11/Remnant2Editor/releases/latest)
+скачай `Remnant2SaveEditor-vX.Y.Z-win64.zip`, распакуй целиком и запусти `Remnant2SaveEditor\Remnant2SaveEditor.exe`
+(не вынимай его из папки — рядом должна лежать `_internal`).
+
+**Собрать самому:** дважды кликни `build.bat` — появится папка `dist\Remnant2SaveEditor\` с `.exe`
+(`build.bat onefile` — один файл, но на него чаще ругаются антивирусы). Настройки и лог `.exe` лежат
+в `%APPDATA%\Remnant2SaveEditor`.
 
 Перед каждым сохранением делается бэкап (`_editor_backups` рядом с сейвом), откатить можно кнопкой **Backups…**.
 Редактор не даст сохранить, пока запущена игра или если игра успела перезаписать файл. Используй на свой страх и
