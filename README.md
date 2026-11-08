@@ -154,7 +154,7 @@ python -m venv .venv
 | "Remnant 2 is running" on save | Close the game completely; check Task Manager for `Remnant2-Win64-Shipping.exe`. |
 | "read-only" / "could not read" after a game update | The save format changed. Nothing was written. Report it on GitHub Issues or the Nexus page with `%APPDATA%\Remnant2SaveEditor\editor.log`, the game version and your platform. |
 | "file changed on disk" on save | The game saved after you opened the editor. Press **Reload** and redo the edits. |
-| Black screen after loading in game | Kill the game in Task Manager and start it again. If it repeats, **Backups…** → restore the previous `save_N.sav`. A possible cause is teleporting to an undiscovered world stone (**Open stone** first); the exact cause is not known. |
+| Black screen after loading in game | Kill the game in Task Manager, **Backups…** → restore the previous `save_N.sav`. Possible cause: teleporting to an undiscovered world stone. |
 
 </details>
 
@@ -185,7 +185,7 @@ python -m venv .venv
 | Teleport to an **undiscovered world stone** | ⚠️ mixed: Mournful Promenade (zone already visited) → black screen; The Great Hall (zone not visited) → worked. The editor warns before it |
 | Opening world stones (travel menu) | ✅ all stones of an Awakened King roll appeared and worked; travelling straight to the One True King and killing him completed the story quest |
 | Duplicating Crimson King Coins | ✅ 1 coin → 3, the Red Prince accepted the tribute and *Succession* unlocked |
-| Loading a teleported save from the game's main menu | ⚠️ mixed: sometimes the world loads fine, sometimes it is a black screen; no pattern found yet |
+| Teleporting while the game sits in the main menu | ❌ doesn't work — close the game completely |
 | Summon Blood Moon | ✅ |
 | Adding catalog items (rings, amulets, armor…) | ⚠️ same format as tested resources, not checked in game |
 | Trait levels | ⚠️ not checked |
@@ -202,8 +202,7 @@ python -m venv .venv
   would renumber every reference in the save) until the game rewrites the save. Undo works until you save; after
   that, re-add the item from the catalog or restore a backup.
 - **Teleport to an undiscovered world stone** may give a black screen on load: one tested case did, another didn't.
-  The GUI marks such stones with ⚠ and asks first; the CLI prints a warning. The exact cause is not known, so keep the
-  backups.
+  The GUI marks such stones with ⚠ and asks first; the CLI prints a warning.
 - **Teleport** to transitions or unexplored zones can put you behind a fog wall or skip a quest trigger.
   World stones and checkpoints of discovered zones are the safe choice.
 - **After a forced Blood Moon** the game keeps the chance at 100 %; press *Reset chance (5%)* (the editor warns you).
