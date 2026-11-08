@@ -154,7 +154,7 @@ python -m venv .venv
 | "Remnant 2 is running" on save | Close the game completely; check Task Manager for `Remnant2-Win64-Shipping.exe`. |
 | "read-only" / "could not read" after a game update | The save format changed. Nothing was written. Report it on GitHub Issues or the Nexus page with `%APPDATA%\Remnant2SaveEditor\editor.log`, the game version and your platform. |
 | "file changed on disk" on save | The game saved after you opened the editor. Press **Reload** and redo the edits. |
-| Black screen after loading in game | Kill the game in Task Manager, **Backups…** → restore the previous `save_N.sav`. Possible cause: teleporting to an undiscovered world stone. |
+| Black screen after loading in game | Kill the game in Task Manager and start it again. If it repeats, **Backups…** → restore the previous `save_N.sav`. A possible cause is teleporting to an undiscovered world stone (**Open stone** first); the exact cause is not known. |
 
 </details>
 
@@ -185,7 +185,7 @@ python -m venv .venv
 | Teleport to an **undiscovered world stone** | ⚠️ mixed: Mournful Promenade (zone already visited) → black screen; The Great Hall (zone not visited) → worked. The editor warns before it |
 | Opening world stones (travel menu) | ✅ all stones of an Awakened King roll appeared and worked; travelling straight to the One True King and killing him completed the story quest |
 | Duplicating Crimson King Coins | ✅ 1 coin → 3, the Red Prince accepted the tribute and *Succession* unlocked |
-| Teleporting while the game sits in the main menu | ❌ doesn't work — close the game completely |
+| Loading a teleported save from the game's main menu | ⚠️ mixed: sometimes the world loads fine, sometimes it is a black screen; no pattern found yet |
 | Summon Blood Moon | ✅ |
 | Adding catalog items (rings, amulets, armor…) | ⚠️ same format as tested resources, not checked in game |
 | Trait levels | ⚠️ not checked |
@@ -202,10 +202,12 @@ python -m venv .venv
   would renumber every reference in the save) until the game rewrites the save. Undo works until you save; after
   that, re-add the item from the catalog or restore a backup.
 - **Teleport to an undiscovered world stone** may give a black screen on load: one tested case did, another didn't.
-  The GUI marks such stones with ⚠ and asks first; the CLI prints a warning.
+  The GUI marks such stones with ⚠ and asks first; the CLI prints a warning. The exact cause is not known, so keep the
+  backups.
 - **Teleport** to transitions or unexplored zones can put you behind a fog wall or skip a quest trigger.
   World stones and checkpoints of discovered zones are the safe choice.
 - **After a forced Blood Moon** the game keeps the chance at 100 %; press *Reset chance (5%)* (the editor warns you).
+- **DLC items** you do not own stay locked in the inventory (the editor asks before adding one).
 - **Steam Cloud:** if Steam ever asks which save to keep, choose the local one.
 - A game update may change the save format. The editor then refuses to open the file or opens it read-only —
   it never writes a file it does not fully understand.
@@ -352,6 +354,9 @@ on Windows, zips it and publishes the release with this changelog as notes.
 
 Details in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
+**AI disclosure:** the code was written largely by Claude (Anthropic, via Claude Code); the author set the
+requirements, made the design decisions and tested every feature on his own saves in game.
+
 ## License
 
 [MIT](LICENSE) © 2026 Dima (distrix11).
@@ -368,17 +373,18 @@ by Gunfire Games or Gearbox Publishing, and contains no game assets.
 телепорт по камням мира и чекпоинтам, вызов Blood Moon, анализ лута в текущем ролле. Интерфейс на английском
 и русском (кнопки RU / EN).
 
-1. Установи [Python 3.8+](https://www.python.org/downloads/windows/) (галочка **Add python.exe to PATH**).
-2. Скачай архив (**Code → Download ZIP**), распакуй и запусти `Start Editor.bat`.
-3. **Полностью закрой игру**, внеси изменения, нажми **Save** и запусти игру.
-
-**Готовая программа без Python:** на странице [Releases](https://github.com/distrix11/Remnant2Editor/releases/latest)
+**Проще всего (без Python):** на странице [Releases](https://github.com/distrix11/Remnant2Editor/releases/latest)
 скачай `Remnant2SaveEditor-vX.Y.Z-win64.zip`, распакуй целиком и запусти `Remnant2SaveEditor\Remnant2SaveEditor.exe`
 (не вынимай его из папки — рядом должна лежать `_internal`).
 
-**Собрать самому:** дважды кликни `build.bat` — появится папка `dist\Remnant2SaveEditor\` с `.exe`
+**Из исходников:** установи [Python 3.8+](https://www.python.org/downloads/windows/) (галочка **Add python.exe to PATH**),
+скачай архив (**Code → Download ZIP**), распакуй и запусти `Start Editor.bat`.
+
+**Собрать .exe самому:** дважды кликни `build.bat` — появится папка `dist\Remnant2SaveEditor\` с `.exe`
 (`build.bat onefile` — один файл, но на него чаще ругаются антивирусы). Настройки и лог `.exe` лежат
 в `%APPDATA%\Remnant2SaveEditor`.
+
+**Порядок работы:** **полностью закрой игру**, внеси изменения, нажми **Save** и запусти игру.
 
 Перед каждым сохранением делается бэкап (`_editor_backups` рядом с сейвом), откатить можно кнопкой **Backups…**.
 Редактор не даст сохранить, пока запущена игра или если игра успела перезаписать файл. Используй на свой страх и
