@@ -8,6 +8,8 @@
 
 Pure Python · no dependencies · dark Remnant-style GUI + CLI · English / Русский
 
+**Download:** [GitHub Releases](https://github.com/distrix11/Remnant2Editor/releases/latest) · [Nexus Mods](https://www.nexusmods.com/remnant2/mods/254)
+
 ![Character tab](docs/screenshots/character.png)
 
 </div>
@@ -55,7 +57,7 @@ Pure Python · no dependencies · dark Remnant-style GUI + CLI · English / Ру
 ### Quickest: download a release (no Python)
 
 1. Open [**Releases**](https://github.com/distrix11/Remnant2Editor/releases/latest) and download
-   `Remnant2SaveEditor-vX.Y.Z-win64.zip`.
+   `Remnant2SaveEditor-vX.Y.Z-win64.zip` (the same build is also on [Nexus Mods](https://www.nexusmods.com/remnant2/mods/254)).
 2. Unpack the whole archive anywhere and run **`Remnant2SaveEditor\Remnant2SaveEditor.exe`**. Keep the exe inside
    its folder, next to `_internal` — it does not start on its own.
 3. Continue with [Edit](#edit).
@@ -373,7 +375,7 @@ by Gunfire Games or Gearbox Publishing, and contains no game assets.
 и русском (кнопки RU / EN).
 
 **Проще всего (без Python):** на странице [Releases](https://github.com/distrix11/Remnant2Editor/releases/latest)
-скачай `Remnant2SaveEditor-vX.Y.Z-win64.zip`, распакуй целиком и запусти `Remnant2SaveEditor\Remnant2SaveEditor.exe`
+(или на [Nexus Mods](https://www.nexusmods.com/remnant2/mods/254)) скачай `Remnant2SaveEditor-vX.Y.Z-win64.zip`, распакуй целиком и запусти `Remnant2SaveEditor\Remnant2SaveEditor.exe`
 (не вынимай его из папки — рядом должна лежать `_internal`).
 
 **Из исходников:** установи [Python 3.8+](https://www.python.org/downloads/windows/) (галочка **Add python.exe to PATH**),
