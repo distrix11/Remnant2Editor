@@ -140,6 +140,10 @@ python -m venv .venv
   whole `Remnant2SaveEditor` folder, or make a desktop shortcut to the exe.
 - **Rebuild after updating the source** — the .exe does not update itself. The version is shown in the **?** (About)
   window and in the exe's *Properties → Details*; both come from `__version__` in `r2save/__init__.py`.
+- **"Windows protected your PC" on first launch** (SmartScreen, *Unknown publisher*): this is not an antivirus
+  detection. SmartScreen judges reputation: the exe is new, downloaded from the internet and not code-signed.
+  Click **More info → Run anyway**; Windows remembers the choice for that file. A new version of the exe may show
+  it again until it has enough downloads. A code-signing certificate would remove it, but it costs money.
 - **Antivirus:** unsigned PyInstaller exes are a common false positive. In testing (Nov 2026) Windows Defender
   flagged the one-file build (`Trojan:Win32/Wacatac.B!ml`, a machine-learning heuristic) but not the folder build;
   VirusTotal showed 1 heuristic hit out of ~70 for the folder build. That is why the folder build is the default.
@@ -189,7 +193,7 @@ python -m venv .venv
 | Duplicating Crimson King Coins | ✅ 1 coin → 3, the Red Prince accepted the tribute and *Succession* unlocked |
 | Teleporting while the game sits in the main menu | ❌ doesn't work — close the game completely |
 | Summon Blood Moon | ✅ |
-| Adding catalog items (rings, amulets, armor…) | ⚠️ same format as tested resources, not checked in game |
+| Adding catalog items | ✅ an amulet (*Echo of the Forest*) added from the catalog worked and opened the Trinity Crossbow room (rings and armor not tried separately) |
 | Trait levels | ⚠️ not checked |
 | Deleting items | ⚠️ not checked in game |
 
@@ -384,6 +388,9 @@ by Gunfire Games or Gearbox Publishing, and contains no game assets.
 **Собрать .exe самому:** дважды кликни `build.bat` — появится папка `dist\Remnant2SaveEditor\` с `.exe`
 (`build.bat onefile` — один файл, но на него чаще ругаются антивирусы). Настройки и лог `.exe` лежат
 в `%APPDATA%\Remnant2SaveEditor`.
+
+**Первый запуск:** Windows может показать «Система Windows защитила ваш компьютер» (SmartScreen, «Неизвестный издатель»).
+Это не детект антивируса: программа новая и без цифровой подписи. Нажми «Подробнее» → «Выполнить в любом случае».
 
 **Порядок работы:** **полностью закрой игру**, внеси изменения, нажми **Save** и запусти игру.
 
