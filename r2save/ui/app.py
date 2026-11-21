@@ -51,6 +51,9 @@ class App(CharacterTab, ResourcesTab, InventoryTab, TraitsTab, AddItemTab, Telep
             path = self._default_profile()
         if path:
             self.after(50, lambda: self.load(path))
+        from .. import updates
+        if updates.due():
+            self.after(4000, self.start_update_check)
 
     def docs(self):
         return [d for d in (self.pd, self.wd) if d is not None]

@@ -375,6 +375,14 @@ S = {
     "about_files": ("ФАЙЛЫ", "FILES"),
     "about_settings": ("Настройки: %s", "Settings: %s"),
     "about_log": ("Лог ошибок: %s", "Error log: %s"),
+    "upd_check_box": ("Проверять обновления при запуске (раз в сутки, запрос к GitHub)",
+                      "Check for updates at startup (once a day, one request to GitHub)"),
+    "upd_check_now": ("Проверить сейчас", "Check now"),
+    "upd_available": ("Вышла новая версия %s (у тебя %s).\nОткрыть страницу загрузки?",
+                      "Version %s is available (you have %s).\nOpen the download page?"),
+    "upd_uptodate": ("У тебя последняя версия (%s).", "You have the latest version (%s)."),
+    "upd_failed": ("Не удалось проверить обновления (нет сети или GitHub недоступен).\n%s",
+                   "Could not check for updates (no network, or GitHub is unreachable).\n%s"),
     "about_disclaimer": ("Remnant и Remnant II — товарные знаки их владельцев. Проект не связан с Gunfire Games и "
                          "Gearbox Publishing и не содержит файлов игры.",
                          "Remnant and Remnant II are trademarks of their respective owners. This project is not "

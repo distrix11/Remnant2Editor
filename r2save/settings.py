@@ -1,4 +1,4 @@
-"""Small persisted settings (settings.json): language, backups to keep.
+"""Small persisted settings (settings.json): language, backups to keep, update check.
 
 Location: next to the editor when run from source; %APPDATA%\\Remnant2SaveEditor when packaged as .exe
 (a PyInstaller one-file build unpacks itself into a temporary folder that is deleted on exit).
@@ -10,6 +10,9 @@ import sys
 DEFAULTS = {
     "language": "en",
     "backups_keep": 20,      # editor backups kept per save file; 0 = keep everything
+    "check_updates": True,   # ask GitHub once a day whether a newer release exists (notify only)
+    "last_update_check": 0,
+    "skipped_version": "",   # a release the user already declined, so we do not ask again
 }
 
 

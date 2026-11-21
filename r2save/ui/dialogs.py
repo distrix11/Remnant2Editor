@@ -3,6 +3,7 @@ from .common import *  # noqa: F401,F403
 from .. import settings
 from .. import __version__, APP_NAME, AUTHOR, REPO_URL
 from ..storage import prune_backups
+from .. import updates
 from .common import _ask_int, _fmt_local, _INT_TYPES, _ask_int as ask_int  # noqa: F401
 
 
@@ -186,10 +187,55 @@ class DialogsMixin:
         ttk.Label(win.body, text="\n".join(info), style="Muted.TLabel", justify="left", wraplength=600).pack(anchor="w")
         ttk.Label(win.body, text=t("about_disclaimer"), style="Muted.TLabel", wraplength=600,
                   justify="left").pack(anchor="w", pady=(14, 0))
+        upd_var = tk.BooleanVar(value=updates.enabled())
+        ttk.Checkbutton(win.body, text=t("upd_check_box"), variable=upd_var,
+                        command=lambda: settings.set("check_updates", bool(upd_var.get()))).pack(anchor="w", pady=(10, 0))
         bar = ttk.Frame(win.body)
         bar.pack(fill="x", side="bottom", pady=(10, 0))
         ttk.Button(bar, text="GitHub", command=lambda: webbrowser.open(REPO_URL)).pack(side="left")
+        ttk.Button(bar, text=t("upd_check_now"),
+                   command=lambda: self.start_update_check(manual=True, parent=win)).pack(side="left", padx=(8, 0))
         ttk.Button(bar, text=t("close"), style="Accent.TButton", command=win.destroy).pack(side="right")
+
+    def start_update_check(self, manual=False, parent=None):
+        """Ask GitHub for the latest release in a background thread; the result is handled on the Tk thread."""
+        import queue
+        import threading
+        q = queue.Queue()
+
+        def work():
+            try:
+                q.put(("ok", updates.fetch_latest()))
+            except Exception as e:  # noqa: BLE001 - any network / format problem
+                q.put(("err", "%s: %s" % (type(e).__name__, e)))
+        threading.Thread(target=work, daemon=True).start()
+
+        def poll():
+            try:
+                kind, val = q.get_nowait()
+            except queue.Empty:
+                self.after(300, poll)
+                return
+            self._update_result(kind, val, manual, parent)
+        self.after(300, poll)
+
+    def _update_result(self, kind, val, manual, parent):
+        import webbrowser
+        kw = {"parent": parent} if parent is not None else {}
+        if kind != "ok":
+            if manual:
+                messagebox.showerror(TITLE, t("upd_failed", val), **kw)
+            return
+        updates.mark_checked()
+        if updates.is_newer(val):
+            if not manual and settings.get("skipped_version") == val:
+                return
+            if messagebox.askyesno(TITLE, t("upd_available", val, __version__), **kw):
+                webbrowser.open(updates.RELEASES_URL)
+            else:
+                settings.set("skipped_version", val)
+        elif manual:
+            messagebox.showinfo(TITLE, t("upd_uptodate", __version__), **kw)
 
     def show_quest_items(self):
         """Quest items of the selected world (they live in save_N.sav, not in the character inventory)."""
