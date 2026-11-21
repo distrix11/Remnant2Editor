@@ -305,6 +305,12 @@ on Windows, zips it and publishes the release with this changelog as notes.
 
 ## Changelog
 
+**1.5.1**
+- Fixed: the editor did not notice that Remnant 2 was running (`tasklist` shortens the process name to 25
+  characters, so the check never matched) and saved while the game was open. Now it refuses and asks you to close
+  the game completely, as intended. Saving while the game runs can be undone by the game itself (it rewrites its
+  files), so the changes may not stay.
+
 **1.5.0**
 - Saves the editor does not fully understand (e.g. after a game update) open read-only: on load the file must
   write back byte-for-byte unchanged, otherwise editing and saving are refused. Clear messages for damaged files,

@@ -22,6 +22,16 @@ def default_save_dirs():
     return sorted(out)
 
 
+def _is_in_tasklist(output, exe=GAME_EXE):
+    """True if `exe` appears in `tasklist` output.
+
+    tasklist cuts the image name to 25 characters ("Remnant2-Win64-Shipping.e"), so the full name never shows up
+    in its output; compare the 25-character prefix instead (this was a bug in 1.5.0: the check always said "not
+    running" and the editor saved while the game was open).
+    """
+    return exe[:25].lower() in output.lower()
+
+
 def game_running():
     if sys.platform != "win32":
         return False
@@ -29,7 +39,7 @@ def game_running():
         out = subprocess.run(["tasklist", "/FI", "IMAGENAME eq %s" % GAME_EXE, "/NH"],
                              capture_output=True, text=True, timeout=10,
                              creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout
-        return GAME_EXE.lower() in out.lower()
+        return _is_in_tasklist(out)
     except Exception:
         return False
 
