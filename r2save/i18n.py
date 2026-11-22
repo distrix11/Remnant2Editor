@@ -48,6 +48,7 @@ S = {
     "category": ("Категория:", "Category:"),
     "all": ("(все)", "(all)"),
     "count": ("%d шт.", "%d items"),
+    "count_owned": ("%d шт., из них уже есть: %d", "%d items, %d already owned"),
     "col_item": ("Предмет", "Item"),
     "col_cat": ("Категория", "Category"),
     "col_type": ("Тип данных", "Data type"),

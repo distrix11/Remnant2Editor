@@ -19,7 +19,7 @@ class AddItemTab:
         self.cat_type.current(0)
         self.cat_type.pack(side="left")
         self.cat_type.bind("<<ComboboxSelected>>", lambda e: self.fill_catalog())
-        self.cat_hide = tk.BooleanVar(value=True)
+        self.cat_hide = tk.BooleanVar(value=False)   # show everything by default, owned rows are marked
         ttk.Checkbutton(top, text=t("hide_owned"), variable=self.cat_hide,
                         command=self.fill_catalog).pack(side="left", padx=(14, 0))
         self.cat_count = ttk.Label(top, text="", style="Muted.TLabel")
@@ -71,6 +71,7 @@ class AddItemTab:
         hide = self.cat_hide.get()
         self.cat_t.clear()
         self._cat_rows = []
+        n_owned = 0
         for e in d.catalog():
             if typ != ALL and e["Type"] != typ:
                 continue
@@ -81,9 +82,10 @@ class AddItemTab:
             if q and q not in (name + " " + d.english_name(e) + " " + e["Id"]).lower():
                 continue
             self._cat_rows.append(e)
+            n_owned += have
             self.cat_t.add(len(self._cat_rows) - 1, (name, t("itype_" + e["Type"]), world_label(e.get("World")),
                                                      "✓" if have else ""), tags=("muted",) if have else ())
-        self.cat_count.config(text=t("count", len(self._cat_rows)))
+        self.cat_count.config(text=t("count_owned", len(self._cat_rows), n_owned))
         self.cat_note.config(text="")
 
     def _cat_sel(self, _e=None):
