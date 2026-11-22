@@ -200,9 +200,9 @@ python -m venv .venv
 | Duplicating Crimson King Coins | ✅ 1 coin → 3, the Red Prince accepted the tribute and *Succession* unlocked |
 | Teleporting while the game sits in the main menu | ❌ doesn't work — close the game completely |
 | Summon Blood Moon | ✅ |
-| Adding catalog items | ✅ an amulet (*Echo of the Forest*) added from the catalog worked and opened the Trinity Crossbow room (rings and armor not tried separately) |
+| Adding catalog items | ✅ an amulet (*Echo of the Forest*, it opened the Trinity Crossbow room), a ring and an armor piece (gloves) were added from the catalog and showed up in the game (mutators, consumables and materials not tried) |
 | Trait levels | ⚠️ not checked |
-| Deleting items | ⚠️ not checked in game |
+| Deleting items | ✅ a ring was deleted and the game loaded normally (other item types not tried) |
 
 ### Known risks
 
