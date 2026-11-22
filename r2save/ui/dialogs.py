@@ -144,6 +144,16 @@ class DialogsMixin:
         import platform
         import webbrowser
         win = DarkWindow(self, t("about_title"), "640x500")
+        bar = ttk.Frame(win.body)
+        bar.pack(fill="x", side="bottom", pady=(10, 0))
+        ttk.Button(bar, text="GitHub", command=lambda: webbrowser.open(REPO_URL)).pack(side="left")
+        ttk.Button(bar, text=t("upd_check_now"),
+                   command=lambda: self.start_update_check(manual=True, parent=win)).pack(side="left", padx=(8, 0))
+        ttk.Button(bar, text=t("close"), style="Accent.TButton", command=win.destroy).pack(side="right")
+        upd_var = tk.BooleanVar(value=updates.enabled())
+        ttk.Checkbutton(win.body, text=t("upd_check_box"), variable=upd_var,
+                        command=lambda: settings.set("check_updates", bool(upd_var.get()))).pack(
+                            side="bottom", anchor="w", pady=(10, 0))
         top = ttk.Frame(win.body)
         top.pack(fill="x")
         em = theme.image("emblem_64")
@@ -187,15 +197,11 @@ class DialogsMixin:
         ttk.Label(win.body, text="\n".join(info), style="Muted.TLabel", justify="left", wraplength=600).pack(anchor="w")
         ttk.Label(win.body, text=t("about_disclaimer"), style="Muted.TLabel", wraplength=600,
                   justify="left").pack(anchor="w", pady=(14, 0))
-        upd_var = tk.BooleanVar(value=updates.enabled())
-        ttk.Checkbutton(win.body, text=t("upd_check_box"), variable=upd_var,
-                        command=lambda: settings.set("check_updates", bool(upd_var.get()))).pack(anchor="w", pady=(10, 0))
-        bar = ttk.Frame(win.body)
-        bar.pack(fill="x", side="bottom", pady=(10, 0))
-        ttk.Button(bar, text="GitHub", command=lambda: webbrowser.open(REPO_URL)).pack(side="left")
-        ttk.Button(bar, text=t("upd_check_now"),
-                   command=lambda: self.start_update_check(manual=True, parent=win)).pack(side="left", padx=(8, 0))
-        ttk.Button(bar, text=t("close"), style="Accent.TButton", command=win.destroy).pack(side="right")
+        # the window grows to fit the content (Windows display scaling makes the text taller than 500 px)
+        win.update_idletasks()
+        need = win.winfo_reqheight()
+        if need > win.winfo_height():
+            win.geometry("%dx%d" % (max(640, win.winfo_reqwidth()), need))
 
     def start_update_check(self, manual=False, parent=None):
         """Ask GitHub for the latest release in a background thread; the result is handled on the Tk thread."""
