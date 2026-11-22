@@ -115,7 +115,10 @@ class InventoryTab:
         self._edit(self.pd, "%s: +%d → +%d" % (it.name, old, v), lambda: it.set_level(v))
 
     def inv_delete(self):
-        it = self._cur_item()
+        self.delete_item(self._cur_item())
+
+    def delete_item(self, it):
+        """Delete one inventory item after the safety checks and a confirmation (used by Inventory and Add item)."""
         if it is None:
             return
         why = self.char.delete_blockers(it)

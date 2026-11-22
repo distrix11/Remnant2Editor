@@ -285,6 +285,8 @@ S = {
     "level_prompt_special": ("Боссовое (особое) оружие — максимум +%d.\nНовый уровень:",
                              "Special (boss) weapon — max +%d.\nNew level:"),
     "level_prompt_max": ("Максимум +%d.\nНовый уровень:", "Max +%d.\nNew level:"),
+    "remove_selected": ("Удалить из инвентаря…", "Remove from inventory…"),
+    "not_owned": ("«%s» нет в инвентаре, удалять нечего.", "You do not have \u201c%s\u201d, nothing to remove."),
     "del_btn": ("Удалить…", "Delete…"),
     "del_confirm": ("Удалить «%s» из инвентаря?\n\nОтменить можно через «Отменить» до сохранения, а кольца, амулеты, "
                     "броню, мутаторы, расходники и материалы — вернуть через вкладку «Добавить».",

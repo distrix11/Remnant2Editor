@@ -36,6 +36,7 @@ class AddItemTab:
         ttk.Entry(r, textvariable=self.cat_qty, width=8).pack(side="left", padx=4)
         ttk.Button(r, text=t("add_selected"), style="Accent.TButton", command=self.add_from_catalog).pack(
             side="left", padx=(8, 0))
+        ttk.Button(r, text=t("remove_selected"), command=self.remove_from_catalog).pack(side="left", padx=(18, 0))
         ttk.Label(f, text=t("catalog_note"), style="Muted.TLabel", wraplength=1050).pack(anchor="w")
         self.cat_t.tv.bind("<<TreeviewSelect>>", self._cat_sel)
         self.cat_t.tv.bind("<Double-1>", lambda e: self.add_from_catalog())
@@ -124,6 +125,20 @@ class AddItemTab:
         path = e["ProfileId"]
         self._edit(self.pd, t("added", name) + ("" if qty is None else " x%d" % qty),
                    lambda: ch.add_item(path, qty, inst))
+
+    def remove_from_catalog(self):
+        """Delete the selected catalog item from the inventory (same checks and confirmation as Inventory > Delete)."""
+        if self.char is None:
+            return
+        sel = self.cat_t.selected()
+        if sel is None:
+            return messagebox.showinfo(TITLE, t("pick_item"))
+        e = self._cat_rows[int(sel)]
+        path = e["ProfileId"].lower()
+        it = next((i for i in self.char.items() if i.path and i.path.lower() == path), None)
+        if it is None:
+            return messagebox.showinfo(TITLE, t("not_owned", db().item_name(e)))
+        self.delete_item(it)
 
     def add_item(self):
         if self.char is None:
