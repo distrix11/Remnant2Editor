@@ -141,8 +141,8 @@ python -m venv .venv
 - **Update check:** once a day at startup the editor makes one HTTPS request to the GitHub releases API
   (`api.github.com`) and, if a newer release exists, asks whether to open the download page. It never downloads or
   replaces anything and sends nothing but a normal request (your IP address and the user agent
-  `Remnant2SaveEditor/<version>`). Turn it off in the **?** window (*Check for updates at startup*) or with
-  `"check_updates": false` in `settings.json`. Everything else in the editor works offline.
+  `Remnant2SaveEditor/<version>`). Turn it off with `"check_updates": false` in `settings.json` (in 1.5.1 this is the only way: the checkbox in the
+  **?** window is cut off at some display scalings; fixed in later versions). Everything else in the editor works offline.
 - **Rebuild after updating the source** — the .exe does not update itself. The version is shown in the **?** (About)
   window and in the exe's *Properties → Details*; both come from `__version__` in `r2save/__init__.py`.
 - **"Windows protected your PC" on first launch** (SmartScreen, *Unknown publisher*): this is not an antivirus
@@ -313,7 +313,8 @@ on Windows, zips it and publishes the release with this changelog as notes.
 **1.5.1**
 - New: update check. Once a day (and on the **Check now** button in the **?** window) the editor asks GitHub
   whether a newer release exists and offers to open the download page. Notification only: nothing is downloaded or
-  installed automatically. Can be switched off in the **?** window.
+  installed automatically. Can be switched off in `settings.json` (`"check_updates": false`). The **?** window has a checkbox for it
+  from the next version on; in 1.5.1 it is cut off at some display scalings.
 - Fixed: the editor did not notice that Remnant 2 was running (`tasklist` shortens the process name to 25
   characters, so the check never matched) and saved while the game was open. Now it refuses and asks you to close
   the game completely, as intended. Saving while the game runs can be undone by the game itself (it rewrites its
