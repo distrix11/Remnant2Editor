@@ -312,7 +312,7 @@ on Windows, zips it and publishes the release with this changelog as notes.
 
 ## Changelog
 
-**Unreleased** (will become 1.5.2; rename this heading to the version when releasing, the release notes tool skips it until then)
+**Unreleased** (will become 1.5.2)
 - Fixed: the **?** window was cut off at some display scalings, hiding the *Check for updates at startup* checkbox and
   the buttons. The window now grows to fit its content.
 - Add item tab: items you already own are now shown by default, marked with ✓ and counted ("N items, M already
