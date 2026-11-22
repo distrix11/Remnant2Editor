@@ -312,6 +312,18 @@ on Windows, zips it and publishes the release with this changelog as notes.
 
 ## Changelog
 
+**Unreleased** (will become 1.5.2; rename this heading to the version when releasing, the release notes tool skips it until then)
+- Fixed: the **?** window was cut off at some display scalings, hiding the *Check for updates at startup* checkbox and
+  the buttons. The window now grows to fit its content.
+- Add item tab: items you already own are now shown by default, marked with ✓ and counted ("N items, M already
+  owned"), instead of being hidden (the *Hide owned* checkbox is still there). Searching for a set you own used to
+  return nothing, which looked like the editor did not see it (the Engineer armor set is named *Technician ...* in
+  the item data).
+- Add item tab: new **Remove from inventory** button for the selected owned item, with the same safety checks and
+  confirmation as Inventory > Delete.
+- Inventory: armor, rings and amulets show quantity 1 instead of an empty cell (they have no quantity field).
+- Verified in game: adding a ring, armor, a mutator and a consumable; deleting a ring; changing trait levels.
+
 **1.5.1**
 - New: update check. Once a day (and on the **Check now** button in the **?** window) the editor asks GitHub
   whether a newer release exists and offers to open the download page. Notification only: nothing is downloaded or
