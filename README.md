@@ -14,9 +14,11 @@ Pure Python · no dependencies · dark Remnant-style GUI + CLI · English / Ру
 
 </div>
 
-> [!WARNING]
-> Unofficial fan tool. **Close the game completely before saving**, keep the automatic backups, and use it in
-> solo play. Editing saves is at your own risk.
+> [!NOTE]
+> Unofficial fan tool, shared as is. Every save makes an **automatic backup** (*Backups…* restores it), and the
+> editor refuses to save while the game is running, so **close Remnant 2 completely first**. Tested in solo play;
+> co-op is not tested yet. The author is not responsible for damaged or lost saves, so for bigger changes also keep
+> your own copy of the save folder.
 
 ## Features
 
