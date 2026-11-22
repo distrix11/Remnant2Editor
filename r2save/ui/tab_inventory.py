@@ -57,7 +57,7 @@ class InventoryTab:
             mx = it.max_level if it.levelable else None
             self._inv_items[str(it.id)] = it
             self.inv_t.add(it.id, (it.name, it.category, it.instance_type or "",
-                                   "" if qty is None else qty, "" if lvl is None else ("+%d / %d" % (lvl, mx) if mx else "+%d" % lvl), it.id))
+                                   1 if qty is None else qty, "" if lvl is None else ("+%d / %d" % (lvl, mx) if mx else "+%d" % lvl), it.id))
             n += 1
         self.inv_count.config(text=t("count", n))
 
