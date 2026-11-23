@@ -324,6 +324,8 @@ on Windows, zips it and publishes the release with this changelog as notes.
 - Inventory: armor, rings and amulets show quantity 1 instead of an empty cell (they have no quantity field).
 - New: a red banner at the top of the window while Remnant 2 is running ("close the game completely"), checked every
   few seconds, so you do not edit first and find out only when saving.
+- Add item tab: new **Add whole set** button for armor. Select any piece of a set and all missing pieces are added in
+  one undoable step (27 four-piece sets in the catalog). Not checked in game yet; adding single armor pieces was.
 - **?** window: new **Open log folder** button (the folder with `editor.log`, the file to attach to a bug report).
 - Verified in game: adding a ring, armor, a mutator and a consumable; deleting a ring; changing trait levels.
 

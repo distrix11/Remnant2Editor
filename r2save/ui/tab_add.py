@@ -1,4 +1,6 @@
 """Add item tab: catalog and manual path."""
+import re
+
 from .common import *  # noqa: F401,F403
 from .common import _ask_int, _fmt_local, _INT_TYPES, _ask_int as ask_int  # noqa: F401
 
@@ -36,6 +38,7 @@ class AddItemTab:
         ttk.Entry(r, textvariable=self.cat_qty, width=8).pack(side="left", padx=4)
         ttk.Button(r, text=t("add_selected"), style="Accent.TButton", command=self.add_from_catalog).pack(
             side="left", padx=(8, 0))
+        ttk.Button(r, text=t("add_set"), command=self.add_set_from_catalog).pack(side="left", padx=(8, 0))
         ttk.Button(r, text=t("remove_selected"), command=self.remove_from_catalog).pack(side="left", padx=(18, 0))
         ttk.Label(f, text=t("catalog_note"), style="Muted.TLabel", wraplength=1050).pack(anchor="w")
         self.cat_t.tv.bind("<<TreeviewSelect>>", self._cat_sel)
@@ -125,6 +128,56 @@ class AddItemTab:
         path = e["ProfileId"]
         self._edit(self.pd, t("added", name) + ("" if qty is None else " x%d" % qty),
                    lambda: ch.add_item(path, qty, inst))
+
+    _ARMOR_ID = re.compile(r"^Armor_(Head|Body|Legs|Gloves)_(.+)$")
+
+    def _armor_set(self, e):
+        """Catalog entries of the armor set the armor piece `e` belongs to (same suffix in the same folder)."""
+        m = self._ARMOR_ID.match(e["Id"])
+        if m is None:
+            return [e]
+        folder = e["ProfileId"].rsplit("/", 1)[0]
+        out = []
+        for x in db().catalog():
+            mx = self._ARMOR_ID.match(x["Id"])
+            if mx and mx.group(2) == m.group(2) and x["ProfileId"].rsplit("/", 1)[0] == folder:
+                out.append(x)
+        return out
+
+    def add_set_from_catalog(self):
+        """Add every missing piece of the selected armor piece's set in one undoable change."""
+        if self.char is None:
+            return
+        sel = self.cat_t.selected()
+        if sel is None:
+            return messagebox.showinfo(TITLE, t("set_pick_armor"))
+        e = self._cat_rows[int(sel)]
+        if e["Type"] != "armor":
+            return messagebox.showinfo(TITLE, t("set_pick_armor"))
+        d = db()
+        pieces = self._armor_set(e)
+        if len(pieces) < 2:
+            return messagebox.showinfo(TITLE, t("set_single", d.item_name(e)))
+        owned = self._owned_paths()
+        missing = [x for x in pieces if x["ProfileId"].lower() not in owned]
+        if not missing:
+            return messagebox.showinfo(TITLE, t("set_all_owned", d.item_name(e)))
+        world = e.get("World") or ""
+        if world.startswith("World_DLC") and not getattr(self, "_dlc_ok", False):
+            if not messagebox.askyesno(TITLE, t("dlc_confirm", d.item_name(e), world_label(world))):
+                return
+            self._dlc_ok = True
+        names = [d.item_name(x) for x in missing]
+        if not messagebox.askyesno(TITLE, t("set_confirm", len(missing), "\n".join("• " + n for n in names))):
+            return
+        ch = self.char
+        inst = ADD_RULES["armor"][0]
+        paths = [x["ProfileId"] for x in missing]
+
+        def add_all():
+            for pth in paths:
+                ch.add_item(pth, None, inst)
+        self._edit(self.pd, t("set_added", ", ".join(names)), add_all)
 
     def remove_from_catalog(self):
         """Delete the selected catalog item from the inventory (same checks and confirmation as Inventory > Delete)."""
