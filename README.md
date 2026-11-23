@@ -143,8 +143,8 @@ python -m venv .venv
 - **Update check:** once a day at startup the editor makes one HTTPS request to the GitHub releases API
   (`api.github.com`) and, if a newer release exists, asks whether to open the download page. It never downloads or
   replaces anything and sends nothing but a normal request (your IP address and the user agent
-  `Remnant2SaveEditor/<version>`). Turn it off with `"check_updates": false` in `settings.json` (in 1.5.1 this is the only way: the checkbox in the
-  **?** window is cut off at some display scalings; fixed in later versions). Everything else in the editor works offline.
+  `Remnant2SaveEditor/<version>`). Turn it off in the **?** window (*Check for updates at startup*) or with `"check_updates": false` in
+  `settings.json` (in 1.5.1 only the file works: the checkbox is cut off at some display scalings; fixed in 1.5.2). Everything else in the editor works offline.
 - **Rebuild after updating the source** — the .exe does not update itself. The version is shown in the **?** (About)
   window and in the exe's *Properties → Details*; both come from `__version__` in `r2save/__init__.py`.
 - **"Windows protected your PC" on first launch** (SmartScreen, *Unknown publisher*): this is not an antivirus
@@ -200,7 +200,7 @@ python -m venv .venv
 | Duplicating Crimson King Coins | ✅ 1 coin → 3, the Red Prince accepted the tribute and *Succession* unlocked |
 | Teleporting while the game sits in the main menu | ❌ doesn't work — close the game completely |
 | Summon Blood Moon | ✅ |
-| Adding catalog items | ✅ an amulet (*Echo of the Forest*, it opened the Trinity Crossbow room), a ring, an armor piece (gloves), a mutator and a consumable were added from the catalog and showed up in the game (materials not tried separately) |
+| Adding catalog items | ✅ an amulet (*Echo of the Forest*, it opened the Trinity Crossbow room), a ring, an armor piece (gloves), a mutator, a consumable and a whole armor set (*Add whole set*) were added from the catalog and showed up in the game (materials not tried separately) |
 | Trait levels | ✅ changed and checked in game |
 | Deleting items | ✅ a ring was deleted and the game loaded normally (other item types not tried) |
 
@@ -312,7 +312,7 @@ on Windows, zips it and publishes the release with this changelog as notes.
 
 ## Changelog
 
-**Unreleased** (will become 1.5.2)
+**1.5.2**
 - Fixed: the **?** window was cut off at some display scalings, hiding the *Check for updates at startup* checkbox and
   the buttons. The window now grows to fit its content.
 - Add item tab: items you already own are now shown by default, marked with ✓ and counted ("N items, M already
@@ -325,7 +325,7 @@ on Windows, zips it and publishes the release with this changelog as notes.
 - New: a red banner at the top of the window while Remnant 2 is running ("close the game completely"), checked every
   few seconds, so you do not edit first and find out only when saving.
 - Add item tab: new **Add whole set** button for armor (it appears when the Armor filter is on or an armor piece is selected). Select any piece of a set and all missing pieces are added in
-  one undoable step (27 four-piece sets in the catalog). Not checked in game yet; adding single armor pieces was.
+  one undoable step (27 four-piece sets in the catalog). Verified in game.
 - **?** window: new **Open log folder** button (the folder with `editor.log`, the file to attach to a bug report).
 - Verified in game: adding a ring, armor, a mutator and a consumable; deleting a ring; changing trait levels.
 
@@ -333,7 +333,7 @@ on Windows, zips it and publishes the release with this changelog as notes.
 - New: update check. Once a day (and on the **Check now** button in the **?** window) the editor asks GitHub
   whether a newer release exists and offers to open the download page. Notification only: nothing is downloaded or
   installed automatically. Can be switched off in `settings.json` (`"check_updates": false`). The **?** window has a checkbox for it
-  from the next version on; in 1.5.1 it is cut off at some display scalings.
+  from 1.5.2 on; in 1.5.1 it is cut off at some display scalings.
 - Fixed: the editor did not notice that Remnant 2 was running (`tasklist` shortens the process name to 25
   characters, so the check never matched) and saved while the game was open. Now it refuses and asks you to close
   the game completely, as intended. Saving while the game runs can be undone by the game itself (it rewrites its
