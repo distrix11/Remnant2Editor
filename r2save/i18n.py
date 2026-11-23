@@ -386,6 +386,11 @@ S = {
     "upd_uptodate": ("У тебя последняя версия (%s).", "You have the latest version (%s)."),
     "upd_failed": ("Не удалось проверить обновления (нет сети или GitHub недоступен).\n%s",
                    "Could not check for updates (no network, or GitHub is unreachable).\n%s"),
+    "about_open_log": ("Открыть папку с логом", "Open log folder"),
+    "game_banner": ("⚠ Remnant 2 запущена. Закрой игру полностью: пока она открыта, редактор не сохранит файл, "
+                    "а игра может перезаписать твои изменения.",
+                    "⚠ Remnant 2 is running. Close the game completely: while it is open the editor will not save, "
+                    "and the game may overwrite your changes."),
     "about_disclaimer": ("Remnant и Remnant II — товарные знаки их владельцев. Проект не связан с Gunfire Games и "
                          "Gearbox Publishing и не содержит файлов игры.",
                          "Remnant and Remnant II are trademarks of their respective owners. This project is not "

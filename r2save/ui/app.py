@@ -51,9 +51,32 @@ class App(CharacterTab, ResourcesTab, InventoryTab, TraitsTab, AddItemTab, Telep
             path = self._default_profile()
         if path:
             self.after(50, lambda: self.load(path))
+        self._game_state = False
+        self._game_thread = None
+        self.after(500, self._game_tick)
         from .. import updates
         if updates.due():
             self.after(4000, self.start_update_check)
+
+    def _game_tick(self):
+        """Every few seconds: show a banner while Remnant 2 runs. `tasklist` runs in a thread so the UI never waits."""
+        import threading
+
+        def work():
+            try:
+                self._game_state = bool(game_running())
+            except Exception:  # noqa: BLE001
+                self._game_state = False
+        if self._game_thread is None or not self._game_thread.is_alive():
+            self._game_thread = threading.Thread(target=work, daemon=True)
+            self._game_thread.start()
+        shown = self.game_banner.winfo_manager() != ""
+        self.game_banner.config(wraplength=max(360, self.winfo_width() - 90))
+        if self._game_state and not shown:
+            self.game_banner.pack(fill="x", padx=14, pady=(6, 0), before=self._top_bar)
+        elif not self._game_state and shown:
+            self.game_banner.pack_forget()
+        self.after(4000, self._game_tick)
 
     def docs(self):
         return [d for d in (self.pd, self.wd) if d is not None]
@@ -141,8 +164,11 @@ class App(CharacterTab, ResourcesTab, InventoryTab, TraitsTab, AddItemTab, Telep
                                   style="Muted.TLabel")
         self.file_lbl.pack(side="right", pady=(6, 0), padx=(0, 14))
         tk.Frame(self, bg=theme.RED, height=2).pack(fill="x", padx=14)
+        self.game_banner = ttk.Label(self, text=t("game_banner"), style="InfoWarn.TLabel", wraplength=1080,
+                                     justify="left")
         bar = ttk.Frame(self, padding=(14, 10, 14, 6))
         bar.pack(fill="x")
+        self._top_bar = bar
         ttk.Button(bar, text=t("open"), command=self.open_dialog).pack(side="left")
         ttk.Button(bar, text=t("reload"), command=self.reload).pack(side="left", padx=(6, 0))
         self.save_btn = ttk.Button(bar, text=t("save"), style="Accent.TButton", command=self.save)

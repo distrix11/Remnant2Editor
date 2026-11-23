@@ -147,6 +147,8 @@ class DialogsMixin:
         bar = ttk.Frame(win.body)
         bar.pack(fill="x", side="bottom", pady=(10, 0))
         ttk.Button(bar, text="GitHub", command=lambda: webbrowser.open(REPO_URL)).pack(side="left")
+        ttk.Button(bar, text=t("about_open_log"), command=lambda: self.open_log_folder(win)).pack(
+            side="left", padx=(8, 0))
         ttk.Button(bar, text=t("upd_check_now"),
                    command=lambda: self.start_update_check(manual=True, parent=win)).pack(side="left", padx=(8, 0))
         ttk.Button(bar, text=t("close"), style="Accent.TButton", command=win.destroy).pack(side="right")
@@ -202,6 +204,18 @@ class DialogsMixin:
         need = win.winfo_reqheight()
         if need > win.winfo_height():
             win.geometry("%dx%d" % (max(640, win.winfo_reqwidth()), need))
+
+    def open_log_folder(self, parent=None):
+        """Open the folder that holds editor.log (the file to attach to a bug report)."""
+        d = os.path.join(os.environ.get("APPDATA") or os.path.expanduser("~"), "Remnant2SaveEditor")
+        try:
+            os.makedirs(d, exist_ok=True)
+        except OSError:
+            pass
+        if sys.platform == "win32":
+            os.startfile(d)
+        else:
+            messagebox.showinfo(TITLE, d, **({"parent": parent} if parent is not None else {}))
 
     def start_update_check(self, manual=False, parent=None):
         """Ask GitHub for the latest release in a background thread; the result is handled on the Tk thread."""
