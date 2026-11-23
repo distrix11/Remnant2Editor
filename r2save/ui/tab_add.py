@@ -36,9 +36,10 @@ class AddItemTab:
         ttk.Label(r, text=t("quantity")).pack(side="left")
         self.cat_qty = tk.StringVar(value="1")
         ttk.Entry(r, textvariable=self.cat_qty, width=8).pack(side="left", padx=4)
-        ttk.Button(r, text=t("add_selected"), style="Accent.TButton", command=self.add_from_catalog).pack(
-            side="left", padx=(8, 0))
-        ttk.Button(r, text=t("add_set"), command=self.add_set_from_catalog).pack(side="left", padx=(8, 0))
+        self.cat_add_btn = ttk.Button(r, text=t("add_selected"), style="Accent.TButton",
+                                      command=self.add_from_catalog)
+        self.cat_add_btn.pack(side="left", padx=(8, 0))
+        self.cat_set_btn = ttk.Button(r, text=t("add_set"), command=self.add_set_from_catalog)   # shown for armor only
         ttk.Button(r, text=t("remove_selected"), command=self.remove_from_catalog).pack(side="left", padx=(18, 0))
         ttk.Label(f, text=t("catalog_note"), style="Muted.TLabel", wraplength=1050).pack(anchor="w")
         self.cat_t.tv.bind("<<TreeviewSelect>>", self._cat_sel)
@@ -91,6 +92,7 @@ class AddItemTab:
                                                      "✓" if have else ""), tags=("muted",) if have else ())
         self.cat_count.config(text=t("count_owned", len(self._cat_rows), n_owned))
         self.cat_note.config(text="")
+        self._update_set_btn()
 
     def _cat_sel(self, _e=None):
         sel = self.cat_t.selected()
@@ -99,6 +101,7 @@ class AddItemTab:
         e = self._cat_rows[int(sel)]
         note = e.get("Note") or ""
         self.cat_note.config(text=(t("where_get", note) + "   ·   " if note else "") + e["ProfileId"])
+        self._update_set_btn()
 
     def add_from_catalog(self):
         if self.char is None:
@@ -128,6 +131,26 @@ class AddItemTab:
         path = e["ProfileId"]
         self._edit(self.pd, t("added", name) + ("" if qty is None else " x%d" % qty),
                    lambda: ch.add_item(path, qty, inst))
+
+    def _update_set_btn(self):
+        """'Add whole set' makes sense only for armor: show it while the Armor filter is on or an armor row is selected."""
+        if not hasattr(self, "cat_set_btn"):
+            return
+        ti = self.cat_type.current()
+        typ = self._cat_types[ti] if 0 <= ti < len(self._cat_types) else ALL
+        sel = self.cat_t.selected()
+        row_armor = False
+        if sel is not None:
+            try:
+                row_armor = self._cat_rows[int(sel)]["Type"] == "armor"
+            except (IndexError, ValueError):
+                row_armor = False
+        want = typ == "armor" or row_armor
+        shown = self.cat_set_btn.winfo_manager() != ""
+        if want and not shown:
+            self.cat_set_btn.pack(side="left", padx=(8, 0), after=self.cat_add_btn)
+        elif not want and shown:
+            self.cat_set_btn.pack_forget()
 
     _ARMOR_ID = re.compile(r"^Armor_(Head|Body|Legs|Gloves)_(.+)$")
 
