@@ -59,13 +59,25 @@ Pure Python · no dependencies · dark Remnant-style GUI + CLI · English / Ру
 ### Quickest: download a release (no Python)
 
 1. Open [**Releases**](https://github.com/distrix11/Remnant2Editor/releases/latest) and download
-   `Remnant2SaveEditor-vX.Y.Z-win64.zip` (the same build is also on [Nexus Mods](https://www.nexusmods.com/remnant2/mods/254)).
+   `Remnant2SaveEditor-vX.Y.Z-win64.zip`.
 2. Unpack the whole archive anywhere and run **`Remnant2SaveEditor\Remnant2SaveEditor.exe`**. Keep the exe inside
    its folder, next to `_internal` — it does not start on its own.
 3. Continue with [Edit](#edit).
 
 Release builds are made by GitHub Actions straight from the tagged source (the *Release* workflow), so anyone can
 check what went into them.
+
+### Script package (Nexus Mods, no .exe)
+
+[Nexus Mods](https://www.nexusmods.com/remnant2/mods/254) gets `Remnant2SaveEditor-vX.Y.Z-scripts.zip` (also attached
+to each GitHub release): the same editor as Python files, with no `.exe`, `.dll` or `.bat` inside.
+
+1. Install **Python 3.8 or newer** from [python.org](https://www.python.org/downloads/windows/) once, with the default
+   options (they include Tkinter and the launcher that opens `.pyw` files).
+2. Unpack the whole archive anywhere and double-click **`Remnant2SaveEditor.pyw`**. If it opens in a text editor,
+   right-click it → *Open with* → *Python*.
+
+Settings are kept in `settings.json` next to the `.pyw`, the log in `%APPDATA%\Remnant2SaveEditor\editor.log`.
 
 ### Or run from source
 
@@ -308,7 +320,8 @@ pip install pillow && python tools\make_icons.py                                
 Bump `__version__` in `r2save/__init__.py`, add a changelog entry below and push to `main`. Then either press
 **Actions → Release → Run workflow** (it creates the tag `v<__version__>` on that commit), or push a tag yourself:
 `git tag vX.Y.Z && git push origin vX.Y.Z`. The workflow checks the tag against `__version__`, builds the folder build
-on Windows, zips it and publishes the release with this changelog as notes.
+on Windows, zips it, builds the script package (`tools/make_script_package.py`, for Nexus Mods) and publishes both
+with this changelog as notes.
 
 ## Changelog
 
@@ -413,8 +426,12 @@ by Gunfire Games or Gearbox Publishing, and contains no game assets.
 и русском (кнопки RU / EN).
 
 **Проще всего (без Python):** на странице [Releases](https://github.com/distrix11/Remnant2Editor/releases/latest)
-(или на [Nexus Mods](https://www.nexusmods.com/remnant2/mods/254)) скачай `Remnant2SaveEditor-vX.Y.Z-win64.zip`, распакуй целиком и запусти `Remnant2SaveEditor\Remnant2SaveEditor.exe`
+скачай `Remnant2SaveEditor-vX.Y.Z-win64.zip`, распакуй целиком и запусти `Remnant2SaveEditor\Remnant2SaveEditor.exe`
 (не вынимай его из папки — рядом должна лежать `_internal`).
+
+**С Nexus Mods (без .exe):** там лежит `Remnant2SaveEditor-vX.Y.Z-scripts.zip`, тот же редактор в виде Python-файлов.
+Один раз установи [Python 3.8+](https://www.python.org/downloads/windows/) с настройками по умолчанию, распакуй архив
+и дважды щёлкни `Remnant2SaveEditor.pyw` (если открылся блокнот: правый клик → «Открыть с помощью» → Python).
 
 **Из исходников:** установи [Python 3.8+](https://www.python.org/downloads/windows/) (галочка **Add python.exe to PATH**),
 скачай архив (**Code → Download ZIP**), распакуй и запусти `Start Editor.bat`.

@@ -1,6 +1,7 @@
 # Publishes a GitHub release: either push a version tag (git tag v1.4.0 && git push origin v1.4.0), or press
 # "Run workflow" on the Actions tab - then the tag v<__version__> is created on the current main commit.
-# Builds the Windows folder build, zips it and attaches it; notes come from the README changelog.
+# Builds the Windows folder build, zips it and attaches it, plus the script-only package (no .exe, for Nexus Mods);
+# notes come from the README changelog.
 name: Release
 
 on:
@@ -55,6 +56,17 @@ jobs:
           "ZIP=$zip" >> $env:GITHUB_ENV
           "SHA=$sha" >> $env:GITHUB_ENV
 
+      - name: Script package (no .exe)
+        shell: pwsh
+        run: |
+          python tools/make_script_package.py .
+          $szip = "Remnant2SaveEditor-$env:TAG-scripts.zip"
+          if (-not (Test-Path $szip)) { throw "script package $szip was not built" }
+          $ssha = (Get-FileHash $szip -Algorithm SHA256).Hash.ToLower()
+          "$ssha  $szip"
+          "SZIP=$szip" >> $env:GITHUB_ENV
+          "SSHA=$ssha" >> $env:GITHUB_ENV
+
       - name: Release notes
         shell: pwsh
         env:
@@ -66,10 +78,12 @@ jobs:
           } else {
             python tools/release_notes.py $env:TAG --zip $env:ZIP --sha $env:SHA -o notes.md
           }
+          Add-Content notes.md ""
+          Add-Content notes.md "**Script package (no .exe):** ``$env:SZIP``, SHA-256 ``$env:SSHA``. Needs Python 3.8+ from python.org; extract and double-click ``Remnant2SaveEditor.pyw``."
           Get-Content notes.md
 
       - name: Publish
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create $env:TAG $env:ZIP --target "${{ github.sha }}" --title "Remnant 2 Save Editor $env:TAG" --notes-file notes.md
+        run: gh release create $env:TAG $env:ZIP $env:SZIP --target "${{ github.sha }}" --title "Remnant 2 Save Editor $env:TAG" --notes-file notes.md
