@@ -4,7 +4,7 @@ Needs Pillow:  pip install pillow   ->   python tools/make_nexus_preview.py [out
 Writes (default folder: dist/, not committed):
   nexus_header.png   1300x372  mod page header
   nexus_preview.png  1920x1080 main image / thumbnail (16:9)
-and docs/header.png (the header without the version number, for the GitHub README).
+and docs/header.png (the same header, for the GitHub README). No version number on the images.
 """
 import math
 import os
@@ -13,8 +13,6 @@ import sys
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
-sys.path.insert(0, ROOT)
-from r2save import __version__  # noqa: E402
 
 FONTS = os.path.join(ROOT, "r2save", "assets", "fonts")
 SS = 3                       # supersampling for smooth lines
@@ -31,8 +29,8 @@ RED_DK = (62, 13, 10)
 CORE = (255, 214, 200)
 
 FEATURES = ["Resources", "Items", "Archetypes", "Teleport", "World stones", "Blood Moon", "Loot analysis"]
-SUB_BASE = "Free & open source   ·   English / Русский"
-SUB = SUB_BASE + "   ·   v%s" % __version__
+# no version number on the images: they must not go stale with every release
+SUB = "Free & open source   ·   English / Русский"
 
 
 def font(name, size):
@@ -116,10 +114,9 @@ def loading_bar(d, x0, x1, y, h):
     d.rectangle([a, y, a + (x1 - x0) * 0.11, y + h], fill=RED_GLOW)
 
 
-def header(out, version=True):
-    """1300x372: emblem on the left, title block on the right. version=False for the GitHub README
-    (a banner there must not go stale with every release)."""
-    sub = SUB if version else SUB_BASE
+def header(out):
+    """1300x372: emblem on the left, title block on the right."""
+    sub = SUB
     W, H = 1300, 372
     w, h = W * SS, H * SS
     ex, ey = 310 * SS, 190 * SS
@@ -175,7 +172,7 @@ def save(img, size, out):
 def main():
     folder = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, "dist")
     header(os.path.join(folder, "nexus_header.png"))
-    header(os.path.join(ROOT, "docs", "header.png"), version=False)
+    header(os.path.join(ROOT, "docs", "header.png"))
     preview(os.path.join(folder, "nexus_preview.png"))
 
 
