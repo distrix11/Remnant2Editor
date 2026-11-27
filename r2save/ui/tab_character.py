@@ -10,7 +10,7 @@ class CharacterTab:
         card.pack(anchor="w", fill="x")
         theme.section(f, t("archetypes_hdr")).pack(fill="x", pady=(14, 6))
         self.arch_t = Table(f, [("name", t("col_arch")), ("level", t("col_level")), ("xp", "XP"),
-                                ("slot", t("col_equipped"))], [220, -80, -100, 120])
+                                ("slot", t("col_equipped"))], [220, -100, -100, 140])
         self.arch_t.pack(fill="both", expand=True)
         b = ttk.Frame(f)
         b.pack(anchor="w", pady=(6, 0))

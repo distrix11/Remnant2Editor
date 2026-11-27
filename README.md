@@ -117,7 +117,9 @@ searched too but untested; **Xbox / Game Pass saves are not supported** (differe
 3. **Save** (Ctrl+S) — the editor shows the list, backs up the original and writes the file.
 4. Start the game.
 
-Interface language: **RU / EN** buttons in the top-right corner (English by default, the choice is remembered).
+Interface language: the language button in the top-right corner (**EN ▾**) opens the list of languages (English by
+default, the choice is remembered). The window also remembers its size, the open tab and the world picked on the
+Teleport and World analysis tabs (`settings.json`).
 
 ## Build a standalone .exe
 
@@ -295,9 +297,11 @@ r2save/doc.py            open file + undo history + on-disk change detection
 r2save/storage.py        save discovery, backups, restore, verified atomic writes
 r2save/ui/app.py         GUI window: files, undo, save, refresh
 r2save/ui/tab_*.py       one module per tab (character, resources, inventory, traits, add, teleport, …)
-r2save/ui/dialogs.py     changes, backups, about        r2save/ui/common.py   shared widgets
+r2save/ui/dialogs.py     changes, backups, about, what's new   r2save/ui/common.py   shared widgets
+r2save/ui/anim.py        startup splash, tab transitions (can be switched off)
 r2save/theme.py          theme, fonts, icons, dialogs   r2save/gui.py         compatibility entry point
-r2save/i18n.py           RU / EN strings      r2save/settings.py  settings.json (language, backups to keep)
+r2save/i18n.py           RU / EN strings      r2save/settings.py  settings.json (language, window, backups to keep)
+r2save/whatsnew.py       "What's new" notes shown once after an update (add an entry for every release)
 r2save/cli.py            command line         r2save/__init__.py  version
 r2save/data/             db.json, names.json (+ their licenses)
 r2save/assets/           own icons and emblem, Montserrat font
@@ -317,13 +321,37 @@ pip install pillow && python tools\make_icons.py                                
 
 ## Releasing
 
-Bump `__version__` in `r2save/__init__.py`, add a changelog entry below and push to `main`. Then either press
+Bump `__version__` in `r2save/__init__.py`, add a changelog entry below and a short player-facing entry to
+`r2save/whatsnew.py` (shown once after the update), and push to `main`. Then either press
 **Actions → Release → Run workflow** (it creates the tag `v<__version__>` on that commit), or push a tag yourself:
 `git tag vX.Y.Z && git push origin vX.Y.Z`. The workflow checks the tag against `__version__`, builds the folder build
 on Windows, zips it, builds the script package (`tools/make_script_package.py`, for Nexus Mods) and publishes both
 with this changelog as notes.
 
 ## Changelog
+
+**1.5.3**
+- New: a startup splash with a loading bar (the save is read while it is shown) and an animated emblem; smooth tab
+  transitions (the underline glides to the selected tab, the page slides in). Switch them off in the **?** window
+  (*Animations*).
+- New: **What's new** window, shown once after an update (also a button in the **?** window).
+- Language choice is a menu now: the language button in the top-right corner (**EN ▾**) lists the languages.
+- Fixed: the Russian interface did not fit the window (tabs, column headers and the character list were cut off). The
+  default window size now follows the Windows display scaling (125 %, 150 %) and never starts smaller than its content.
+- Fixed: the warning at the bottom of the Teleport tab (and the second note on the Character tab) was pushed out of
+  the window and not visible.
+- Fixed: when one file was written and the other was not (e.g. disk or antivirus error), Undo crashed and the change
+  list still showed the written edits. Now the message says which file was written, and only the unsaved edits stay.
+- Fixed: adventure names such as *Adventure: DLC3_OneShot* are shown readably (*N'Erud (The Dark Horizon)*); quest
+  items lying directly in the item folder no longer make their own inventory category.
+- Tables keep the selection, scroll position, sort order and expanded rows after an edit instead of jumping to the top.
+- The window remembers its size and position, the open tab and the world picked on Teleport / World analysis.
+- Technical columns (data type, IDs) are hidden behind a **Technical columns** checkbox (Inventory, Teleport).
+- Add item tab: manual add by path is folded away, so the catalog shows more rows.
+- Translated the rest of the Russian interface: power level, item level, trait rank, inventory categories, adventures.
+- Ctrl+Z / Ctrl+S work with a Cyrillic keyboard layout too, and only in the main window (not in dialogs).
+- The file path in the header is shortened so it no longer runs into the title.
+- The **?** window shows the log path for the script package too.
 
 **1.5.2**
 - Fixed: the **?** window was cut off at some display scalings, hiding the *Check for updates at startup* checkbox and
@@ -423,7 +451,7 @@ by Gunfire Games or Gearbox Publishing, and contains no game assets.
 
 **Remnant 2 Save Editor** — неофициальный редактор сохранений Remnant 2: ресурсы, предметы, XP архетипов,
 телепорт по камням мира и чекпоинтам, вызов Blood Moon, анализ лута в текущем ролле. Интерфейс на английском
-и русском (кнопки RU / EN).
+и русском (кнопка языка справа сверху открывает список языков).
 
 **Проще всего (без Python):** на странице [Releases](https://github.com/distrix11/Remnant2Editor/releases/latest)
 скачай `Remnant2SaveEditor-vX.Y.Z-win64.zip`, распакуй целиком и запусти `Remnant2SaveEditor\Remnant2SaveEditor.exe`

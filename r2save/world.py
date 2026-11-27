@@ -254,10 +254,18 @@ class World:
 
     @property
     def name(self):
-        if self.is_campaign:
-            return "Campaign"
-        key = self.class_name.replace("Quest_AdventureMode_", "").replace("_C", "")
-        return "Adventure: %s" % ADVENTURE_NAMES.get(key, key)
+        return "Campaign" if self.is_campaign else "Adventure: %s" % self.region
+
+    @property
+    def region(self):
+        """Readable world of an adventure: 'N'Erud (The Dark Horizon)' for Quest_AdventureMode_DLC3_OneShot_C.
+        Variants such as '_OneShot' fall back to their base key ('DLC3')."""
+        key = self.class_name.replace("Quest_AdventureMode_", "")
+        if key.endswith("_C"):
+            key = key[:-2]
+        if key in ADVENTURE_NAMES:
+            return ADVENTURE_NAMES[key]
+        return ADVENTURE_NAMES.get(key.split("_", 1)[0], key)
 
     @property
     def quest_id(self):

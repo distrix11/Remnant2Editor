@@ -18,9 +18,11 @@ class InventoryTab:
         self.inv_cat.bind("<<ComboboxSelected>>", self._on_cat)
         self.inv_count = ttk.Label(top, text="", style="Muted.TLabel")
         self.inv_count.pack(side="left", padx=12)
+        ttk.Checkbutton(top, text=t("show_tech"), variable=self.show_tech,
+                        command=self._apply_tech).pack(side="right")
         self.inv_t = Table(f, [("name", t("col_item")), ("cat", t("col_cat")), ("type", t("col_type")),
                                ("qty", t("col_qty_s")), ("lvl", t("col_level")), ("id", "ID")],
-                           [300, 130, 200, -80, -90, -60])
+                           [300, 150, 200, -80, -100, -60])
         self.inv_t.pack(fill="both", expand=True)
         b = ttk.Frame(f)
         b.pack(anchor="w", pady=(6, 0))
@@ -33,6 +35,14 @@ class InventoryTab:
         self.inv_t.tv.bind("<<TreeviewSelect>>", self._inv_sel)
         self.inv_t.tv.bind("<Double-1>", lambda e: self.inv_dbl())
         self.inv_t.tv.bind("<Delete>", lambda e: self.inv_delete())
+
+    def _apply_tech(self):
+        """Technical columns (data type, IDs) are hidden unless "Technical columns" is ticked (remembered)."""
+        on = bool(self.show_tech.get())
+        settings.set("show_tech", on)
+        self.inv_t.show_columns(() if on else ("type", "id"))
+        if hasattr(self, "tp_t"):
+            self.tp_t.show_columns(() if on else ("id",))
 
     def _on_cat(self, _e=None):
         i = self.inv_cat.current()
@@ -47,7 +57,7 @@ class InventoryTab:
         self.inv_t.clear()
         self._inv_items = {}
         n = 0
-        for it in sorted(self.char.items(), key=lambda x: (x.category, x.name)):
+        for it in sorted(self.char.items(), key=lambda x: (cat_label(x.category).lower(), x.name.lower())):
             if cat != ALL and it.category != cat:
                 continue
             if q and q not in ("%s %s" % (it.name, it.path)).lower():
@@ -56,7 +66,7 @@ class InventoryTab:
             lvl = it.level
             mx = it.max_level if it.levelable else None
             self._inv_items[str(it.id)] = it
-            self.inv_t.add(it.id, (it.name, it.category, it.instance_type or "",
+            self.inv_t.add(it.id, (it.name, cat_label(it.category), (it.instance_type or "").rsplit(".", 1)[-1],
                                    1 if qty is None else qty, "" if lvl is None else ("+%d / %d" % (lvl, mx) if mx else "+%d" % lvl), it.id))
             n += 1
         self.inv_count.config(text=t("count", n))

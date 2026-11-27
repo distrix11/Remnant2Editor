@@ -1,6 +1,7 @@
 """UI strings (Russian / English) and the persisted language setting."""
 
-LANGS = ("ru", "en")
+LANGS = ("en", "ru")
+LANG_NAMES = {"en": "English", "ru": "Русский"}
 _lang = "en"
 
 
@@ -31,8 +32,8 @@ S = {
                   "Очки трейтов привязаны к общему уровню персонажа, их XP архетипа не даёт.",
                   "The game recalculates the archetype level from XP — after saving, load in and kill any enemy.\n"
                   "Trait points come from the overall character level, not from archetype XP."),
-    "overview": ("Архетипы: %s / %s\nPower level: %s    Item level: %s\nTrait rank: %s    Очки трейтов: %s\n"
-                 "Опыт персонажа: %s",
+    "overview": ("Архетипы: %s / %s\nУровень силы: %s    Уровень предметов: %s\nРанг трейтов: %s    "
+                 "Очки трейтов: %s\nОпыт персонажа: %s",
                  "Archetypes: %s / %s\nPower level: %s    Item level: %s\nTrait rank: %s    Trait points: %s\n"
                  "Character XP: %s"),
     "primary": ("основной", "primary"),
@@ -53,6 +54,16 @@ S = {
     "col_cat": ("Категория", "Category"),
     "col_type": ("Тип данных", "Data type"),
     "col_qty_s": ("Кол-во", "Qty"),
+    "show_tech": ("Тех. колонки", "Technical columns"),
+    "cat_Amulets": ("Амулеты", "Amulets"), "cat_Rings": ("Кольца", "Rings"), "cat_Armor": ("Броня", "Armor"),
+    "cat_Archetypes": ("Архетипы", "Archetypes"), "cat_Common": ("Общее", "Common"),
+    "cat_Consumables": ("Расходники", "Consumables"), "cat_Gems": ("Фрагменты реликвий", "Relic fragments"),
+    "cat_Makeshift_Light": ("Фонарик", "Flashlight"), "cat_Materials": ("Материалы", "Materials"),
+    "cat_Melee": ("Оружие ближнего боя", "Melee weapons"), "cat_Weapons": ("Оружие", "Weapons"),
+    "cat_Mods": ("Моды", "Mods"), "cat_Other": ("Прочее", "Other"), "cat_Quest": ("Квестовые", "Quest"),
+    "cat_Relics": ("Реликвии", "Relics"), "cat_Traits": ("Трейты", "Traits"), "cat_Skills": ("Навыки", "Skills"),
+    "cat_Engrams": ("Энграммы", "Engrams"), "cat_Mutators": ("Мутаторы", "Mutators"),
+    "cat_SurvivorPack": ("Набор выжившего", "Survivor Pack"),
     "qty_btn": ("Количество…", "Quantity…"),
     "level_btn": ("Уровень улучшения…", "Upgrade level…"),
     # traits
@@ -111,6 +122,7 @@ S = {
     "world": ("Мир:", "World:"),
     "active_mark": (" (активный)", " (active)"),
     "campaign": ("Кампания", "Campaign"),
+    "adventure": ("Приключение: %s", "Adventure: %s"),
     "show_unvisited": ("Неисследованные зоны", "Unexplored zones"),
     "show_links": ("Переходы между зонами", "Zone transitions"),
     "tp_info": ("Загрузка сейчас:  %s\nПосле смерти:       %s", "Loads into now:   %s\nAfter death:         %s"),
@@ -387,6 +399,19 @@ S = {
     "upd_failed": ("Не удалось проверить обновления (нет сети или GitHub недоступен).\n%s",
                    "Could not check for updates (no network, or GitHub is unreachable).\n%s"),
     "about_open_log": ("Открыть папку с логом", "Open log folder"),
+    "anim_box": ("Анимации (заставка при запуске, переходы между вкладками)",
+                 "Animations (startup splash, tab transitions)"),
+    "sp_ui": ("Готовлю интерфейс…", "Preparing the interface…"),
+    "sp_db": ("Загружаю базу предметов…", "Loading the item database…"),
+    "sp_save": ("Читаю профиль…", "Reading the profile…"),
+    "sp_world": ("Читаю сейв мира…", "Reading the world save…"),
+    "sp_ready": ("Готово", "Ready"),
+    "wn_title": ("Что нового в %s", "What's new in %s"),
+    "wn_head": ("Что нового", "What's new"),
+    "wn_section": ("В ЭТОЙ ВЕРСИИ", "IN THIS VERSION"),
+    "wn_full": ("Полный список изменений", "Full changelog"),
+    "wn_btn": ("Что нового", "What's new"),
+    "wn_none": ("Для версии %s заметок нет.", "No notes for version %s."),
     "game_banner": ("⚠ Remnant 2 запущена. Закрой игру полностью: пока она открыта, редактор не сохранит файл, "
                     "а игра может перезаписать твои изменения.",
                     "⚠ Remnant 2 is running. Close the game completely: while it is open the editor will not save, "
@@ -434,6 +459,12 @@ S = {
                      "Remnant 2 is running. Close the game completely and try again.\n"
                      "Otherwise the game will overwrite the file with its own data."),
     "not_saved": ("Не сохранено:\n%s", "Not saved:\n%s"),
+    "partial_saved": ("Записано: %s (бэкап: %s).\nОстальные файлы не записаны — их правки остались в списке "
+                      "изменений, можно попробовать сохранить ещё раз.",
+                      "Written: %s (backup: %s).\nThe other files were not written — their edits are still in the "
+                      "change list, you can try saving again."),
+    "partial_status": ("⚠ Записано только: %s — остальные правки не сохранены",
+                       "⚠ Only %s was written — the other edits are not saved"),
     "saved_status": ("Сохранено. Бэкап: %s", "Saved. Backup: %s"),
     "saved_msg": ("Сохранено.\nБэкап оригинала:\n%s", "Saved.\nBackup of the original:\n%s"),
     "discard": ("Есть несохранённые изменения. Отбросить их?", "You have unsaved changes. Discard them?"),

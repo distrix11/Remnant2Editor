@@ -17,3 +17,6 @@ settings.json
 # PyInstaller build
 build/
 dist/
+
+# Local copy of the Nexus Mods page text
+readme-nexus.md

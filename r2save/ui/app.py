@@ -10,16 +10,38 @@ from .tab_teleport import TeleportTab
 from .tab_analysis import AnalysisTab
 from .tab_raw import RawTab
 from .dialogs import DialogsMixin
+from . import anim
+
+
+def _geometry_on_screen(geo):
+    """True if a saved 'WxH+X+Y' still has its title bar on a connected monitor (it may have been unplugged)."""
+    import re
+    m = re.match(r"^(\d+)x(\d+)\+(-?\d+)\+(-?\d+)$", geo or "")
+    if not m:
+        return False
+    w, h, x, y = map(int, m.groups())
+    if w < 400 or h < 300:
+        return False
+    left, top, width, height = 0, 0, 1 << 16, 1 << 16
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            gsm = ctypes.windll.user32.GetSystemMetrics
+            left, top, width, height = gsm(76), gsm(77), gsm(78), gsm(79)   # the virtual screen (all monitors)
+        except Exception:
+            pass
+    return left <= x + 60 and x + w - 60 <= left + width and top <= y and y + 40 <= top + height
 
 
 class App(CharacterTab, ResourcesTab, InventoryTab, TraitsTab, AddItemTab, TeleportTab, AnalysisTab, RawTab, DialogsMixin, tk.Tk):
-    def __init__(self, path=None):
+    def __init__(self, path=None, splash=False):
         theme.register_fonts()
+        # no settings.json yet = a fresh install (no "What's new" then); read before anything writes the file
+        self._fresh_install = not os.path.exists(settings.PATH)
         super().__init__()
         i18n.load_lang()
         self.title(TITLE)
-        self.geometry("1140x740")
-        self.minsize(860, 560)
+        self._prefetched = {}    # path -> Doc parsed while the splash was up
         self.pd = None           # Doc: profile.sav
         self.wd = None           # Doc: save_N.sav
         self.log = []            # [(doc, description)] in order, for undo / change list
@@ -42,21 +64,158 @@ class App(CharacterTab, ResourcesTab, InventoryTab, TraitsTab, AddItemTab, Telep
         emblem = theme.image("emblem_64")
         if emblem is not None:
             self.iconphoto(True, emblem)
+        sp = None
+        if splash and anim.enabled():
+            from .. import __version__
+            self.withdraw()
+            sp = anim.Splash(self, __version__)
+            sp.step(0.15, t("sp_ui"))
         self._build()
+        self._place_window()
         self.protocol("WM_DELETE_WINDOW", self.on_close)
         self.bind("<FocusIn>", self._on_focus, add="+")
-        self.bind_all("<Control-z>", lambda e: self.undo_last())
-        self.bind_all("<Control-s>", lambda e: self.save())
+        # main window only (not dialogs); keycode makes Ctrl+Z / Ctrl+S work with a Cyrillic keyboard layout too
+        self.bind("<Control-KeyPress>", self._on_ctrl_key)
         if path is None:
             path = self._default_profile()
-        if path:
-            self.after(50, lambda: self.load(path))
         self._game_state = False
         self._game_thread = None
+        if sp is None:
+            self._start(path)
+            return
+        sp.step(0.45, t("sp_db"))
+        db().catalog()
+        if path:
+            sp.step(0.65, t("sp_save"))
+            self._prefetch(path, sp)
+        sp.finish(lambda: self._reveal(path))
+
+    def _start(self, path):
+        """Everything that runs once the main window is visible."""
+        if path:
+            self.after(50, lambda: self.load(path))
+        self.after(80, self._restore_tab)
+        self.after(700, self._maybe_whats_new)
         self.after(500, self._game_tick)
         from .. import updates
         if updates.due():
             self.after(4000, self.start_update_check)
+
+    def _reveal(self, path):
+        """Splash done: show the main window with a short fade-in."""
+        self.deiconify()
+        theme.dark_titlebar(self)
+        anim.fade_in(self)
+        self.after(30, self.tab_motion.snap)
+        self._start(path)
+
+    def _prefetch(self, path, sp):
+        """Parse the save files while the splash is up, so load() later only wraps them. Errors are left for load()
+        to report with its usual messages."""
+        try:
+            doc = Doc(path)
+            self._prefetched[path] = doc
+            if doc.sf.is_profile:
+                pr = Profile(doc.sf)
+                ch = pr.active_character()
+                if ch is not None:
+                    sp.step(0.85, t("sp_world"))
+                    wp = os.path.join(os.path.dirname(path), "save_%d.sav" % ch.slot)
+                    if os.path.exists(wp):
+                        self._prefetched[wp] = Doc(wp)
+        except Exception:
+            traceback.print_exc()
+
+    def _open_doc(self, path):
+        """A Doc for path: the one parsed during the splash if it is still current, else a fresh read."""
+        doc = self._prefetched.pop(path, None)
+        if doc is not None and not doc.changed_on_disk():
+            return doc
+        return Doc(path)
+
+    # --- window size, tab and worlds remembered in settings.json ---------------------------------------------------
+
+    def _place_window(self):
+        """Last window size/position if it still fits a screen, else a default scaled for the display (125 % / 150 %
+        scaling makes the text bigger, so the 100 % size would cut off tabs and notes)."""
+        self.update_idletasks()
+        scale = max(1.0, self.winfo_fpixels("1i") / 96.0)
+        sw, sh = self.winfo_screenwidth(), self.winfo_screenheight()
+        req_w, req_h = self.winfo_reqwidth(), self.winfo_reqheight()
+        self.minsize(min(int(860 * scale), sw), min(int(560 * scale), sh))
+        w = min(max(int(1180 * scale), req_w), sw - 40)
+        h = min(max(int(760 * scale), req_h), sh - 80)
+        geo = "%dx%d" % (w, h)
+        saved = settings.get("window")
+        if isinstance(saved, str) and _geometry_on_screen(saved):
+            geo = saved
+        self.geometry(geo)
+        if settings.get("window_zoomed"):
+            try:
+                self.state("zoomed")
+            except tk.TclError:
+                pass
+
+    def _save_ui_state(self):
+        try:
+            zoomed = self.state() == "zoomed"
+            settings.set("window_zoomed", zoomed)
+            if self.state() == "normal":
+                settings.set("window", self.geometry())
+            settings.set("tab", self.nb.index("current"))
+        except tk.TclError:
+            pass
+
+    def _restore_tab(self):
+        tab = settings.get("tab")
+        if not isinstance(tab, int) or not 0 <= tab < len(self.nb.tabs()):
+            return
+        if self.prof is None and tab in PROFILE_TABS:
+            return      # load() picked the right tab for a world-only file
+        try:
+            if str(self.nb.tab(tab, "state")) == "normal":
+                self.nb.select(tab)
+        except tk.TclError:
+            pass
+
+    def _remembered_world(self, kind):
+        """World slot the user last picked on the Teleport ('tp') or Analysis ('an') tab for this world file."""
+        if self.wd is None:
+            return None
+        v = (settings.get("worlds") or {}).get(self.wd.name, {}).get(kind)
+        return v if isinstance(v, int) else None
+
+    def _remember_world(self, kind, slot):
+        if self.wd is None:
+            return
+        allw = settings.get("worlds")
+        allw = allw if isinstance(allw, dict) else {}
+        entry = allw.get(self.wd.name) if isinstance(allw.get(self.wd.name), dict) else {}
+        entry[kind] = slot
+        allw[self.wd.name] = entry
+        settings.set("worlds", allw)
+
+    def _maybe_whats_new(self):
+        """Once after an update: what changed in this version. A fresh install just records the version."""
+        from .. import __version__
+        seen = settings.get("last_seen_version")
+        if seen == __version__:
+            return
+        settings.set("last_seen_version", __version__)
+        if not self._fresh_install:
+            self.show_whats_new()
+
+    def _on_ctrl_key(self, e):
+        k = (e.keysym or "").lower()
+        if sys.platform == "win32":     # Windows virtual-key codes do not depend on the layout
+            k = {90: "z", 83: "s"}.get(e.keycode, k)
+        if k == "z":
+            self.undo_last()
+            return "break"
+        if k == "s":
+            self.save()
+            return "break"
+        return None
 
     def _game_tick(self):
         """Every few seconds: show a banner while Remnant 2 runs. `tasklist` runs in a thread so the UI never waits."""
@@ -144,6 +303,7 @@ class App(CharacterTab, ResourcesTab, InventoryTab, TraitsTab, AddItemTab, Telep
         self.set_status(t("undone", "*"))
 
     def _build(self):
+        self.show_tech = tk.BooleanVar(value=bool(settings.get("show_tech")))
         head = ttk.Frame(self, padding=(14, 10, 14, 6))
         head.pack(fill="x")
         em = theme.image("emblem_36")
@@ -156,13 +316,13 @@ class App(CharacterTab, ResourcesTab, InventoryTab, TraitsTab, AddItemTab, Telep
         langs = ttk.Frame(head)
         langs.pack(side="right")
         ttk.Button(langs, text="?", width=3, command=self.show_about).pack(side="right", padx=(10, 0))
-        for code in reversed(i18n.LANGS):
-            ttk.Button(langs, text=code.upper(), width=4,
-                       style="Accent.TButton" if code == i18n.get_lang() else "TButton",
-                       command=lambda c=code: self.switch_lang(c)).pack(side="right", padx=(4, 0))
-        self.file_lbl = ttk.Label(head, text=self.main_doc.path if self.main_doc else t("no_file"),
-                                  style="Muted.TLabel")
-        self.file_lbl.pack(side="right", pady=(6, 0), padx=(0, 14))
+        # one button with the current language; a click opens the list of languages
+        self.lang_btn = ttk.Button(langs, text=i18n.get_lang().upper() + "  ▾", width=6,
+                                   command=self._lang_menu)
+        self.lang_btn.pack(side="right")
+        self.file_lbl = ttk.Label(head, text="", style="Muted.TLabel", anchor="e")
+        self.file_lbl.pack(side="right", fill="x", expand=True, pady=(6, 0), padx=(18, 14))
+        self._set_file_label()
         tk.Frame(self, bg=theme.RED, height=2).pack(fill="x", padx=14)
         self.game_banner = ttk.Label(self, text=t("game_banner"), style="InfoWarn.TLabel", wraplength=1080,
                                      justify="left")
@@ -195,6 +355,9 @@ class App(CharacterTab, ResourcesTab, InventoryTab, TraitsTab, AddItemTab, Telep
         self._tab_teleport()
         self._tab_analysis()
         self._tab_raw()
+        self._apply_tech()
+        self.tab_motion = anim.TabMotion(self.nb)
+        self.after(60, self.tab_motion.snap)
 
     def _frame(self, title, icon=None):
         f = ttk.Frame(self.nb, padding=(4, 12, 4, 4))
@@ -204,6 +367,32 @@ class App(CharacterTab, ResourcesTab, InventoryTab, TraitsTab, AddItemTab, Telep
         else:
             self.nb.add(f, text=title)
         return f
+
+    def _lang_menu(self):
+        m = tk.Menu(self, tearoff=0, bg=theme.PANEL, fg=theme.TEXT, activebackground=theme.RED_DK,
+                    activeforeground="#fff4ec", bd=0, font=theme.FONT_M)
+        cur = i18n.get_lang()
+        for code in i18n.LANGS:
+            m.add_command(label="%s  %s  %s" % ("●" if code == cur else "  ", code.upper(), i18n.LANG_NAMES[code]),
+                          command=lambda c=code: self.switch_lang(c))
+        b = self.lang_btn
+        try:
+            m.tk_popup(b.winfo_rootx(), b.winfo_rooty() + b.winfo_height())
+        finally:
+            m.grab_release()
+
+    def _set_file_label(self):
+        """Path of the open file, shortened from the left so it fits next to the title (Backups… shows it in full)."""
+        doc = self.main_doc
+        if doc is None:
+            self.file_lbl.config(text=t("no_file"))
+            return
+        p = os.path.normpath(doc.path)
+        parts = p.split(os.sep)
+        text = p if len(p) <= 60 else "…" + os.sep + os.sep.join(parts[-3:])
+        if len(text) > 60:
+            text = "…" + text[-59:]
+        self.file_lbl.config(text=text)
 
     def switch_lang(self, lang):
         if lang == i18n.get_lang():
@@ -268,7 +457,7 @@ class App(CharacterTab, ResourcesTab, InventoryTab, TraitsTab, AddItemTab, Telep
         try:
             self.config(cursor="watch")
             self.update_idletasks()
-            doc = Doc(path)
+            doc = self._open_doc(path)
         except Exception as e:
             traceback.print_exc()
             messagebox.showerror(TITLE, self._read_error(path, e))
@@ -318,7 +507,7 @@ class App(CharacterTab, ResourcesTab, InventoryTab, TraitsTab, AddItemTab, Telep
         if not os.path.exists(p):
             return
         try:
-            self.wd = Doc(p)
+            self.wd = self._open_doc(p)
             self.ws = WorldSave(self.wd.sf)
         except Exception as e:
             traceback.print_exc()
@@ -337,7 +526,7 @@ class App(CharacterTab, ResourcesTab, InventoryTab, TraitsTab, AddItemTab, Telep
             self.nb.tab(i, state="normal" if self.prof else "disabled")
         for i in (TAB_TP, TAB_AN):
             self.nb.tab(i, state="normal" if self.ws is not None else "disabled")
-        self.file_lbl.config(text=self.main_doc.path if self.main_doc else t("no_file"))
+        self._set_file_label()
         srcs = []
         if self.pd is not None:
             srcs.append(("p", self.pd.name))
@@ -394,9 +583,9 @@ class App(CharacterTab, ResourcesTab, InventoryTab, TraitsTab, AddItemTab, Telep
         if self.char is not None:
             self.fill_overview()
             self.fill_currency()
-            cats = sorted({it.category for it in self.char.items()})
+            cats = sorted({it.category for it in self.char.items()}, key=lambda c: cat_label(c).lower())
             self._cat_keys = [ALL] + cats
-            self.inv_cat["values"] = [t("all")] + cats
+            self.inv_cat["values"] = [t("all")] + [cat_label(c) for c in cats]
             if self._cat_value not in self._cat_keys:
                 self._cat_value = ALL
             self.inv_cat.current(self._cat_keys.index(self._cat_value))
@@ -412,6 +601,12 @@ class App(CharacterTab, ResourcesTab, InventoryTab, TraitsTab, AddItemTab, Telep
     def _on_tab(self, _e=None):
         if self.nb.index("current") == TAB_RAW and getattr(self, "_raw_stale", True):
             self.fill_raw()
+        tm = getattr(self, "tab_motion", None)
+        if tm is not None and self.winfo_viewable():
+            try:
+                tm.changed(self.nametowidget(self.nb.select()))
+            except (KeyError, tk.TclError):
+                tm.snap()
 
     def save(self):
         docs = [d for d in self.docs() if d.dirty]
@@ -435,18 +630,30 @@ class App(CharacterTab, ResourcesTab, InventoryTab, TraitsTab, AddItemTab, Telep
         if not messagebox.askyesno(TITLE, t("save_confirm", len(self.log), "\n".join(lines))):
             return
         baks = []
+        saved = []
         try:
             for d in docs:
                 baks.append(d.save(check_game=False))
-        except StaleFileError as e:
-            return messagebox.showerror(TITLE, t("stale_save", str(e), len(self.log)))
-        except UnknownFormatError as e:
-            return messagebox.showerror(TITLE, t("err_ro_save", str(e)))
+                saved.append(d)
         except Exception as e:
-            traceback.print_exc()
-            if "verification failed" in str(e) or "unknown save format" in str(e):
-                return messagebox.showerror(TITLE, t("err_verify", LOG_HINT, e))
-            return messagebox.showerror(TITLE, t("not_saved", e))
+            if not isinstance(e, (StaleFileError, UnknownFormatError)):
+                traceback.print_exc()
+            if isinstance(e, StaleFileError):
+                msg = t("stale_save", str(e), len(self.log))
+            elif isinstance(e, UnknownFormatError):
+                msg = t("err_ro_save", str(e))
+            elif "verification failed" in str(e) or "unknown save format" in str(e):
+                msg = t("err_verify", LOG_HINT, e)
+            else:
+                msg = t("not_saved", e)
+            if saved:
+                # some files are already written: their edits are no longer pending (and can't be undone)
+                self.log = [(d, x) for d, x in self.log if d not in saved]
+                self.refresh()
+                names = ", ".join(d.name for d in saved)
+                self.set_status(t("partial_status", names), dirty=True)
+                msg = t("partial_saved", names, "\n".join(str(b) for b in baks)) + "\n\n" + msg
+            return messagebox.showerror(TITLE, msg)
         bak = "\n".join(str(b) for b in baks)
         self.load(self.main_doc.path, quiet=True)
         self.set_status(t("saved_status", bak.replace("\n", "; ")))
@@ -469,6 +676,7 @@ class App(CharacterTab, ResourcesTab, InventoryTab, TraitsTab, AddItemTab, Telep
 
     def on_close(self):
         if self._confirm_discard():
+            self._save_ui_state()
             self.destroy()
 
 
@@ -480,7 +688,7 @@ def main(argv=None):
             ctypes.windll.shcore.SetProcessDpiAwareness(1)
         except Exception:
             pass
-    app = App(argv[0] if argv else None)
+    app = App(argv[0] if argv else None, splash=True)
     theme.dark_titlebar(app)
     app.report_callback_exception = lambda *a: (traceback.print_exception(*a),
                                                 messagebox.showerror(TITLE, "".join(traceback.format_exception(*a))[-1500:]))

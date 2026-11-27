@@ -9,7 +9,7 @@ class TeleportTab:
         top = ttk.Frame(f)
         top.pack(fill="x", pady=(0, 6))
         ttk.Label(top, text=t("world")).pack(side="left")
-        self.tp_world_cb = ttk.Combobox(top, state="readonly", width=34)
+        self.tp_world_cb = ttk.Combobox(top, state="readonly", width=46)
         self.tp_world_cb.pack(side="left", padx=4)
         self.tp_world_cb.bind("<<ComboboxSelected>>", lambda e: self._tp_pick_world())
         self.tp_unvisited = tk.BooleanVar(value=False)
@@ -18,6 +18,8 @@ class TeleportTab:
                         command=self.fill_teleport).pack(side="left", padx=(16, 0))
         ttk.Checkbutton(top, text=t("show_links"), variable=self.tp_links,
                         command=self.fill_teleport).pack(side="left", padx=(12, 0))
+        ttk.Checkbutton(top, text=t("show_tech"), variable=self.show_tech,
+                        command=self._apply_tech).pack(side="right")
         card, self.tp_info = theme.card(f, text="", justify="left")
         card.pack(anchor="w", fill="x", pady=(0, 6))
         bm = ttk.Frame(f)
@@ -32,7 +34,7 @@ class TeleportTab:
         self.bm_warn.pack(anchor="w", pady=(0, 6))
         self.tp_t = Table(f, [("zone", t("col_zone")), ("point", t("col_point")), ("type", t("col_type_s")),
                               ("open", t("col_open")), ("lvl", t("col_level")), ("id", t("col_id"))],
-                          [210, 330, 120, 90, -60, 190])
+                          [210, 330, 130, 110, -90, 190])
         self.tp_t.pack(fill="both", expand=True)
         b = ttk.Frame(f)
         b.pack(anchor="w", pady=(6, 0))
@@ -47,13 +49,14 @@ class TeleportTab:
         return self.ws.worlds() if self.ws is not None else []
 
     def _world_name(self, w):
-        return t("campaign") if w.is_campaign else w.name
+        return t("campaign") if w.is_campaign else t("adventure", w.region)
 
     def _tp_pick_world(self):
         i = self.tp_world_cb.current()
         ws = self._tp_worlds()
         if 0 <= i < len(ws):
             self._tp_world = ws[i].slot
+            self._remember_world("tp", self._tp_world)
         self.fill_teleport()
 
     def _current_tp_world(self):
@@ -110,7 +113,11 @@ class TeleportTab:
         self.tp_world_cb["values"] = [self._world_name(w) + (t("active_mark") if w.active else "") for w in worlds]
         if self._tp_world is None or self._tp_world not in [w.slot for w in worlds]:
             act = self.ws.active_world()
-            self._tp_world = act.slot if act is not None else worlds[0].slot
+            remembered = self._remembered_world("tp")
+            if remembered in [w.slot for w in worlds]:
+                self._tp_world = remembered
+            else:
+                self._tp_world = act.slot if act is not None else worlds[0].slot
         idx = [w.slot for w in worlds].index(self._tp_world)
         self.tp_world_cb.current(idx)
         w = worlds[idx]

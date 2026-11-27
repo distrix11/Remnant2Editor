@@ -9,7 +9,7 @@ class TraitsTab:
         card, self.tr_budget = theme.card(f, text="", justify="left")
         card.pack(anchor="w", fill="x", pady=(0, 8))
         self.tr_t = Table(f, [("name", t("col_trait")), ("kind", t("col_kind")), ("lvl", t("col_level"))],
-                          [300, 160, -80])
+                          [300, 160, -100])
         self.tr_t.pack(fill="both", expand=True)
         b = ttk.Frame(f)
         b.pack(anchor="w", pady=(6, 0))

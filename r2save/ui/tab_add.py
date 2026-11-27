@@ -27,7 +27,7 @@ class AddItemTab:
         self.cat_count = ttk.Label(top, text="", style="Muted.TLabel")
         self.cat_count.pack(side="left", padx=12)
         self.cat_t = Table(f, [("name", t("col_item")), ("type", t("col_type_s")), ("world", t("col_world")),
-                               ("have", t("col_have"))], [320, 130, 220, -70], height=7)
+                               ("have", t("col_have"))], [320, 130, 220, -70])
         self.cat_t.pack(fill="both", expand=True)
         self.cat_note = ttk.Label(f, text="", style="Muted.TLabel", wraplength=1050, justify="left")
         self.cat_note.pack(anchor="w", pady=(4, 0))
@@ -45,25 +45,42 @@ class AddItemTab:
         self.cat_t.tv.bind("<<TreeviewSelect>>", self._cat_sel)
         self.cat_t.tv.bind("<Double-1>", lambda e: self.add_from_catalog())
 
-        theme.section(f, t("manual_hdr")).pack(fill="x", pady=(8, 4))
-        m = ttk.Frame(f)
-        m.pack(fill="x")
+        # manual add by blueprint path: for advanced users, folded away so the catalog gets the space
+        self.manual_btn = ttk.Button(f, text="", style="Link.TButton", command=self._toggle_manual)
+        self.manual_btn.pack(anchor="w", pady=(6, 0))
+        self.manual_box = ttk.Frame(f)
+        self._manual_open = getattr(self, "_manual_open", False)
+        mb = self.manual_box
+        m = ttk.Frame(mb)
+        m.pack(fill="x", pady=(4, 0))
         self.add_path = tk.StringVar()
         ttk.Entry(m, textvariable=self.add_path, width=80).pack(side="left", fill="x", expand=True)
         self.add_kind = tk.StringVar(value="ItemInstanceData")
-        m1 = ttk.Frame(f)
+        m1 = ttk.Frame(mb)
         m1.pack(anchor="w", pady=(2, 0))
         ttk.Radiobutton(m1, text=t("kind_material"), value="ItemInstanceData",
                         variable=self.add_kind).pack(side="left")
         ttk.Radiobutton(m1, text=t("kind_equipment"), value="EquipmentInstanceData",
                         variable=self.add_kind).pack(side="left", padx=(12, 0))
-        m2 = ttk.Frame(f)
+        m2 = ttk.Frame(mb)
         m2.pack(anchor="w", pady=(4, 0))
         ttk.Label(m2, text=t("quantity")).pack(side="left")
         self.add_qty = tk.StringVar(value="1")
         ttk.Entry(m2, textvariable=self.add_qty, width=8).pack(side="left", padx=4)
         ttk.Button(m2, text=t("add"), command=self.add_item).pack(side="left", padx=(8, 0))
         ttk.Label(m2, style="Warn.TLabel", text=t("add_warn").split("\n")[0]).pack(side="left", padx=(12, 0))
+        self._show_manual()
+
+    def _show_manual(self):
+        self.manual_btn.config(text=("▾  " if self._manual_open else "▸  ") + t("manual_hdr"))
+        if self._manual_open:
+            self.manual_box.pack(fill="x", after=self.manual_btn)
+        else:
+            self.manual_box.pack_forget()
+
+    def _toggle_manual(self):
+        self._manual_open = not self._manual_open
+        self._show_manual()
 
     def fill_catalog(self):
         if self.char is None:

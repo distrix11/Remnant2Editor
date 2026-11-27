@@ -63,7 +63,11 @@ def category(path):
     if not path:
         return "?"
     if "/Items/" in path:
-        c = path.split("/Items/", 1)[1].split("/", 1)[0]
+        rest = path.split("/Items/", 1)[1]
+        c = rest.split("/", 1)[0]
+        if "/" not in rest:
+            # the asset sits directly in /Items/ ('Quest_Hidden_Item_X.Quest_Hidden_Item_X_C'): no folder to name it
+            c = "Quest" if rest.startswith("Quest") else "Other"
     else:
         c = "Other"
     if c == "Trinkets":

@@ -9,7 +9,7 @@ class AnalysisTab:
         top = ttk.Frame(f)
         top.pack(fill="x", pady=(0, 6))
         ttk.Label(top, text=t("world")).pack(side="left")
-        self.an_world_cb = ttk.Combobox(top, state="readonly", width=34)
+        self.an_world_cb = ttk.Combobox(top, state="readonly", width=46)
         self.an_world_cb.pack(side="left", padx=4)
         self.an_world_cb.bind("<<ComboboxSelected>>", lambda e: self._an_pick_world())
         self.an_missing = tk.BooleanVar(value=False)
@@ -30,6 +30,7 @@ class AnalysisTab:
         ws = self._tp_worlds()
         if 0 <= i < len(ws):
             self._an_world = ws[i].slot
+            self._remember_world("an", self._an_world)
         self.fill_analysis()
 
     def fill_analysis(self):
@@ -44,7 +45,11 @@ class AnalysisTab:
         self.an_world_cb["values"] = [self._world_name(w) + (t("active_mark") if w.active else "") for w in worlds]
         if self._an_world is None or self._an_world not in [w.slot for w in worlds]:
             act = self.ws.active_world()
-            self._an_world = act.slot if act is not None else worlds[0].slot
+            remembered = self._remembered_world("an")
+            if remembered in [w.slot for w in worlds]:
+                self._an_world = remembered
+            else:
+                self._an_world = act.slot if act is not None else worlds[0].slot
         idx = [w.slot for w in worlds].index(self._an_world)
         self.an_world_cb.current(idx)
         w = worlds[idx]

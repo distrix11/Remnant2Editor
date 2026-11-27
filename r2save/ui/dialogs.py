@@ -4,7 +4,13 @@ from .. import settings
 from .. import __version__, APP_NAME, AUTHOR, REPO_URL
 from ..storage import prune_backups
 from .. import updates
+from .. import whatsnew
 from .common import _ask_int, _fmt_local, _INT_TYPES, _ask_int as ask_int  # noqa: F401
+
+
+def _log_dir():
+    """Where Remnant2SaveEditor.pyw sends editor.log (see the entry point)."""
+    return os.path.join(os.environ.get("APPDATA") or os.path.expanduser("~"), "Remnant2SaveEditor")
 
 
 class DialogsMixin:
@@ -151,7 +157,13 @@ class DialogsMixin:
             side="left", padx=(8, 0))
         ttk.Button(bar, text=t("upd_check_now"),
                    command=lambda: self.start_update_check(manual=True, parent=win)).pack(side="left", padx=(8, 0))
+        ttk.Button(bar, text=t("wn_btn"), command=lambda: self.show_whats_new(parent=win)).pack(
+            side="left", padx=(8, 0))
         ttk.Button(bar, text=t("close"), style="Accent.TButton", command=win.destroy).pack(side="right")
+        anim_var = tk.BooleanVar(value=settings.get("animations") is not False)
+        ttk.Checkbutton(win.body, text=t("anim_box"), variable=anim_var,
+                        command=lambda: settings.set("animations", bool(anim_var.get()))).pack(
+                            side="bottom", anchor="w", pady=(4, 0))
         upd_var = tk.BooleanVar(value=updates.enabled())
         ttk.Checkbutton(win.body, text=t("upd_check_box"), variable=upd_var,
                         command=lambda: settings.set("check_updates", bool(upd_var.get()))).pack(
@@ -192,8 +204,8 @@ class DialogsMixin:
         theme.section(win.body, t("about_files")).pack(fill="x", pady=(14, 4))
         frozen = getattr(sys, "frozen", False)
         info = [t("about_settings", settings.PATH)]
-        if frozen:
-            info.append(t("about_log", os.path.join(settings.app_dir(), "editor.log")))
+        # the .exe and the .pyw (no console) both log here; a console run prints to the terminal instead
+        info.append(t("about_log", os.path.join(_log_dir(), "editor.log")))
         info.append("Python %s · Tk %s · %s" % (platform.python_version(), self.tk.call("info", "patchlevel"),
                                                 "exe" if frozen else "source"))
         ttk.Label(win.body, text="\n".join(info), style="Muted.TLabel", justify="left", wraplength=600).pack(anchor="w")
@@ -201,13 +213,50 @@ class DialogsMixin:
                   justify="left").pack(anchor="w", pady=(14, 0))
         # the window grows to fit the content (Windows display scaling makes the text taller than 500 px)
         win.update_idletasks()
+        need_w, need_h = win.winfo_reqwidth(), win.winfo_reqheight()
+        if need_h > win.winfo_height() or need_w > win.winfo_width():
+            win.geometry("%dx%d" % (max(640, need_w), max(win.winfo_height(), need_h)))
+
+    def show_whats_new(self, parent=None):
+        """Short list of what changed in this version, in the editor's style, with a Close button."""
+        lines = whatsnew.notes(__version__, i18n.get_lang())
+        if not lines:
+            if parent is not None:
+                messagebox.showinfo(TITLE, t("wn_none", __version__), parent=parent)
+            return
+        win = DarkWindow(parent or self, t("wn_title", __version__), "660x520")
+        bar = ttk.Frame(win.body)
+        bar.pack(fill="x", side="bottom", pady=(12, 0))
+        ttk.Button(bar, text=t("wn_full"), command=lambda: __import__("webbrowser").open(
+            REPO_URL + "#changelog")).pack(side="left")
+        close = ttk.Button(bar, text=t("close"), style="Accent.TButton", command=win.destroy)
+        close.pack(side="right")
+        top = ttk.Frame(win.body)
+        top.pack(fill="x")
+        em = theme.image("emblem_64")
+        if em is not None:
+            ttk.Label(top, image=em).pack(side="left", padx=(0, 16))
+        head = ttk.Frame(top)
+        head.pack(side="left", fill="x")
+        ttk.Label(head, text=t("wn_head"), style="Brand.TLabel").pack(anchor="w")
+        ttk.Label(head, text=t("about_version", __version__), style="Section.TLabel").pack(anchor="w")
+        theme.section(win.body, t("wn_section")).pack(fill="x", pady=(14, 6))
+        for line in lines:
+            r = ttk.Frame(win.body)
+            r.pack(fill="x", anchor="w", pady=2)
+            tk.Label(r, text="◆", fg=theme.RED_HI, bg=theme.BG, font=theme.FONT_SUB).pack(side="left", anchor="n",
+                                                                                       padx=(2, 10), pady=(3, 0))
+            ttk.Label(r, text=line, wraplength=560, justify="left").pack(side="left", fill="x")
+        close.focus_set()
+        win.bind("<Return>", lambda e: win.destroy())
+        win.update_idletasks()
         need = win.winfo_reqheight()
         if need > win.winfo_height():
-            win.geometry("%dx%d" % (max(640, win.winfo_reqwidth()), need))
+            win.geometry("%dx%d" % (max(660, win.winfo_reqwidth()), min(need, win.winfo_screenheight() - 80)))
 
     def open_log_folder(self, parent=None):
         """Open the folder that holds editor.log (the file to attach to a bug report)."""
-        d = os.path.join(os.environ.get("APPDATA") or os.path.expanduser("~"), "Remnant2SaveEditor")
+        d = _log_dir()
         try:
             os.makedirs(d, exist_ok=True)
         except OSError:

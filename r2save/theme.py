@@ -161,9 +161,15 @@ def apply(root):
           lightcolor=[("active", RED_HI)], darkcolor=[("active", RED_HI)],
           bordercolor=[("active", RED_GLOW)])
 
+    # flat text button (fold / unfold a section)
+    s.configure("Link.TButton", background=BG, foreground=TEXT, bordercolor=BG, lightcolor=BG, darkcolor=BG,
+                focusthickness=0, padding=(0, 4), relief="flat", font=FONT_B)
+    s.map("Link.TButton", background=[("active", BG), ("pressed", BG)], foreground=[("active", RED_GLOW)],
+          bordercolor=[("active", BG), ("focus", BG)], lightcolor=[("active", BG)], darkcolor=[("active", BG)])
+
     # notebook
     s.configure("TNotebook", background=BG, borderwidth=0, tabmargins=(0, 4, 0, 0))
-    s.configure("TNotebook.Tab", background=BG, foreground=MUTED, padding=(16, 7), bordercolor=BG,
+    s.configure("TNotebook.Tab", background=BG, foreground=MUTED, padding=(12, 7), bordercolor=BG,
                 lightcolor=BG, darkcolor=BG, font=FONT_TAB)
     s.map("TNotebook.Tab",
           background=[("selected", PANEL2), ("active", PANEL)],
