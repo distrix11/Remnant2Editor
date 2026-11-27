@@ -4,6 +4,7 @@ Needs Pillow:  pip install pillow   ->   python tools/make_nexus_preview.py [out
 Writes (default folder: dist/, not committed):
   nexus_header.png   1300x372  mod page header
   nexus_preview.png  1920x1080 main image / thumbnail (16:9)
+and docs/header.png (the header without the version number, for the GitHub README).
 """
 import math
 import os
@@ -30,7 +31,8 @@ RED_DK = (62, 13, 10)
 CORE = (255, 214, 200)
 
 FEATURES = ["Resources", "Items", "Archetypes", "Teleport", "World stones", "Blood Moon", "Loot analysis"]
-SUB = "Free & open source   ·   English / Русский   ·   v%s" % __version__
+SUB_BASE = "Free & open source   ·   English / Русский"
+SUB = SUB_BASE + "   ·   v%s" % __version__
 
 
 def font(name, size):
@@ -114,8 +116,10 @@ def loading_bar(d, x0, x1, y, h):
     d.rectangle([a, y, a + (x1 - x0) * 0.11, y + h], fill=RED_GLOW)
 
 
-def header(out):
-    """1300x372: emblem on the left, title block on the right."""
+def header(out, version=True):
+    """1300x372: emblem on the left, title block on the right. version=False for the GitHub README
+    (a banner there must not go stale with every release)."""
+    sub = SUB if version else SUB_BASE
     W, H = 1300, 372
     w, h = W * SS, H * SS
     ex, ey = 310 * SS, 190 * SS
@@ -132,8 +136,8 @@ def header(out):
     feats = "  ·  ".join(FEATURES)
     f_feat = fit(d, feats, "Medium", 19, (x1 - x0) / SS - 4)
     d.text((x0 + 4 * SS, 258 * SS), feats, font=f_feat, fill=TEXT)
-    f_small = fit(d, SUB, "Regular", 17, (x1 - x0) / SS - 4)
-    d.text((x0 + 4 * SS, 296 * SS), SUB, font=f_small, fill=MUTED)
+    f_small = fit(d, sub, "Regular", 17, (x1 - x0) / SS - 4)
+    d.text((x0 + 4 * SS, 296 * SS), sub, font=f_small, fill=MUTED)
     save(img, (W, H), out)
 
 
@@ -171,6 +175,7 @@ def save(img, size, out):
 def main():
     folder = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, "dist")
     header(os.path.join(folder, "nexus_header.png"))
+    header(os.path.join(ROOT, "docs", "header.png"), version=False)
     preview(os.path.join(folder, "nexus_preview.png"))
 
 

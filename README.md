@@ -1,8 +1,6 @@
 <div align="center">
 
-<img src="r2save/assets/emblem_64.png" width="64" alt="">
-
-# Remnant 2 Save Editor
+<img src="docs/header.png" alt="Remnant 2 Save Editor">
 
 **Analyze and edit Remnant 2 saves: resources, items, archetypes, teleport, Blood Moon, world loot.**
 
@@ -307,6 +305,7 @@ r2save/data/             db.json, names.json (+ their licenses)
 r2save/assets/           own icons and emblem, Montserrat font
 tests/                   roundtrip.py, edit_test.py, dump.py
 tools/make_icons.py      regenerates the icons (needs Pillow)
+tools/make_nexus_preview.py  Nexus header / main image and docs/header.png (needs Pillow)
 ```
 
 </details>
